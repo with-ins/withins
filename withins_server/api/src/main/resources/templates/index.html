@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Unstage - Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #333;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .user-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Unstage</h1>
+        
+        <div th:if="${#authorization.expression('isAuthenticated()')}">
+            <div class="user-info">
+                <h3>User Information</h3>
+                <p>Nickname: <span th:text="${#authentication.principal.attributes.nickname}"></span></p>
+                <p>Email: <span th:text="${#authentication.principal.email}"></span></p>
+                <p>Role: <span th:text="${#authentication.authorities[0]}"></span></p>
+            </div>
+            <a class="btn" href="/api/auth/logout">Logout</a>
+        </div>
+        
+        <div th:unless="${#authorization.expression('isAuthenticated()')}">
+            <p>Please login to access the application.</p>
+            <a class="btn" href="/login">Login</a>
+        </div>
+    </div>
+</body>
+</html>

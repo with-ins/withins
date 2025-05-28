@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-15.15thread] %clr(%5level) %cyan(%logger) - %msg%n"/>
+    <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %5level %logger - %msg%n"/>
+
+    <!--local-->
+    <springProfile name="local">
+        <include resource="console-appender.xml"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!--dev-->
+    <springProfile name="dev">
+        <include resource="file-info-dev-appender.xml"/>
+
+        <root level="INFO">
+            <appender-ref ref="FILE-INFO-DEV"/>
+        </root>
+
+        <!--additivity는 root logger에 중복 기록되는 것을 방지-->
+        <logger level="DEBUG" name="org.hibernate.SQL" additivity="false">
+            <appender-ref ref="FILE-INFO-DEV"/>
+        </logger>
+
+        <logger level="TRACE" name="org.hibernate.type.descriptor.sql.BasicBinder">
+            <appender-ref ref="FILE-INFO-DEV"/>
+        </logger>
+    </springProfile>
+
+    <!--prod-->
+    <springProfile name="prod">
+        <include resource="file-info-prod-appender.xml"/>
+
+        <root level="INFO">
+            <appender-ref ref="FILE-INFO-PROD"/>
+        </root>
+    </springProfile>
+
+</configuration>

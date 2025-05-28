@@ -1,0 +1,85 @@
+:root {
+    --main-color-1: #0071E3;
+    --main-color-1-hover: #f8fbff;
+    --main-color-2: #00C7BE;
+    --main-color-gradient: linear-gradient(90deg, #0071E3 0%, #00C7BE 100%);
+
+    --background-color: white;
+    --stroke-color: #E5E5EC;
+
+    --f1: #2A2E43;
+    --f2: #45495E;
+    --f3: #777984;
+
+    --fs-21: 21px;
+    --fs-16: 16px;
+    --fs-14: 14px;
+    --fs-12: 12px;
+    --fs-10: 10px;
+}
+
+*{
+    font-weight: 400;
+    box-sizing: border-box;
+    margin: 0;
+    color: var(--f2);
+}
+
+main, #app {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+button {
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+    padding: 0;
+}
+button *:not(button) {
+    pointer-events: none;
+}
+
+body {
+    background-color: var(--background-color);
+}
+
+.icon-text {
+    white-space: nowrap;
+}
+svg {
+    flex-shrink: 0;
+}
+
+input {
+    border: none;
+    background-color: transparent;
+    outline: none;
+}
+
+ul {
+    padding: 0;
+}
+li {
+    list-style: none;
+}
+
+h1, h2, h3 {
+    color: var(--f1);
+    line-height: 140%;
+    margin-bottom: 20px;
+}
+span {
+    line-height: 140%;
+}
+
+
+a {
+    text-decoration: none;
+}
+
+.text-gradient {
+    background: var(--main-color-gradient);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
