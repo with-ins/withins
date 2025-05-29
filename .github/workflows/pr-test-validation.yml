@@ -23,9 +23,11 @@ jobs:
           java-version: '21'
 
       - name: Grant execute permission for gradlew
+        working-directory: withins_server
         run: chmod +x gradlew
         shell: bash
 
       - name: Execute tests
-        run: ./withins_server/gradlew test
+        working-directory: withins_server
+        run: ./gradlew test
         shell: bash
