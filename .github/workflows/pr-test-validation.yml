@@ -1,7 +1,6 @@
 name: pr-test-validation
 
 on:
-  workflow_dispatch:
   pull_request:
     types: [ opened, synchronize, reopened ]
     branches: [ '*' ]
@@ -28,5 +27,5 @@ jobs:
         shell: bash
 
       - name: Execute tests
-        run: ./gradlew test
+        run: ./withins_server/gradlew test
         shell: bash
