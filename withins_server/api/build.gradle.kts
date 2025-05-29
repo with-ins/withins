@@ -44,7 +44,7 @@ node {
 
 // Vue.js 빌드 태스크 정의
 tasks.register<com.github.gradle.node.npm.task.NpmTask>("buildFrontend") {
-//    description = "Build Vue.js frontend"
+    dependsOn("npmSetup", "npmInstall")
     npmCommand.set(listOf("run", "build"))
 
     /*
