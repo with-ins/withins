@@ -43,3 +43,6 @@ out/
 
 ##log
 log/
+
+## static files
+/api/src/main/resources/static/

@@ -4,7 +4,7 @@ const path = require("path");
 module.exports = defineConfig({
   transpileDependencies: true,
   lintOnSave: false,
-  outputDir: path.resolve(__dirname, "../withins_server/src/main/resources/static"),
+  outputDir: path.resolve(__dirname, "../withins_server/api/src/main/resources/static"),
 
   publicPath: '/',
   assetsDir: 'static',
