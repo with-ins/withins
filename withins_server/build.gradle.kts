@@ -5,6 +5,7 @@ plugins {
     id("org.springframework.boot") apply false
     id("io.spring.dependency-management") apply false
     id("java-test-fixtures")
+    id("com.github.node-gradle.node") apply false
 }
 
 java {

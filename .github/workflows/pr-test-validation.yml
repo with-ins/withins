@@ -1,7 +1,6 @@
 name: pr-test-validation
 
 on:
-  workflow_dispatch:
   pull_request:
     types: [ opened, synchronize, reopened ]
     branches: [ '*' ]
@@ -24,9 +23,11 @@ jobs:
           java-version: '21'
 
       - name: Grant execute permission for gradlew
+        working-directory: withins_server
         run: chmod +x gradlew
         shell: bash
 
       - name: Execute tests
+        working-directory: withins_server
         run: ./gradlew test
         shell: bash
