@@ -1,0 +1,95 @@
+name: was-promtail-deploy-with-ecs
+
+on:
+  workflow_dispatch:
+
+env:
+  ECR_WAS_REPO_NAME: unstage/spring
+  ECR_PROMTAIL_REPO_NAME: unstage/promtail
+  DOCKERFILE_SPRING_PATH: ./unstage-config/ec2/Dockerfile.spring
+  DOCKERFILE_PROMTAIL_PATH: ./unstage-config/ec2/Dockerfile.promtail
+  ECS_CLUSTER_NAME: unstage-cluster
+  ECS_SERVICE_NAME: spring-promtail-service
+  TASK_DEFINITION_CONTAINER_NAME: was-promtail-spring
+  TASK_TEMPLATE_PATH: ./unstage-config/ecs/spring-promtail-task-definition-dev.json
+  # TASK_DEFINITION_OUTPUT_PATH는 Github Actions 가상환경에서 생성되는 파일
+  TASK_DEFINITION_OUTPUT_PATH: ./unstage-config/ecs/rendered-task-definition.json
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          submodules: true
+          token: ${{ secrets.PRIVATE_REPO_ACCESS_TOKEN }}
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        shell: bash
+
+      - name: Execute tests
+        run: ./gradlew test
+        shell: bash
+
+      - name: Build with Gradle
+        run: ./gradlew clean :api:bootJar
+        shell: bash
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY_ID }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push WAS image
+        id: build-was
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ env.ECR_WAS_REPO_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE_URI=$REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker build -t $IMAGE_URI -f $DOCKERFILE_SPRING_PATH .
+          docker push $IMAGE_URI
+          echo "was_image=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      - name: Build and push Promtail image
+        id: build-promtail
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ env.ECR_PROMTAIL_REPO_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE_URI=$REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker build -t $IMAGE_URI -f $DOCKERFILE_PROMTAIL_PATH .
+          docker push $IMAGE_URI
+          echo "promtail_image=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      - name: Replace image placeholders using sed
+        run: |
+          sed -e "s|<WAS_IMAGE_PLACEHOLDER>|${{ steps.build-was.outputs.was_image }}|" \
+              -e "s|<PROMTAIL_IMAGE_PLACEHOLDER>|${{ steps.build-promtail.outputs.promtail_image }}|" \
+              ${{ env.TASK_TEMPLATE_PATH }} > ${{ env.TASK_DEFINITION_OUTPUT_PATH }}
+
+      - name: Deploy Amazon ECS task definition to ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ env.TASK_DEFINITION_OUTPUT_PATH }}
+          service: ${{ env.ECS_SERVICE_NAME }}
+          cluster: ${{ env.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true # 서비스 안정성 확보 후 워크플로우 종료
+          force-new-deployment: true # 동일 태스크 정의라도 강제 재배포

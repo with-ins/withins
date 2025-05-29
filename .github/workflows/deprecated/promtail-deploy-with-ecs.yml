@@ -1,0 +1,63 @@
+name: promtail-deploy-with-ecs
+
+on:
+  workflow_dispatch:
+
+env:
+  ECR_REPOSITORY_NAME: unstage/promtail
+  DOCKERFILE_PROMTAIL_PATH: ./unstage-config/ec2/Dockerfile.promtail
+  ECS_CLUSTER_NAME: unstage-cluster
+  ECS_SERVICE_NAME: unstage-ecs-promtail-service
+  TASK_DEFINITION_CONTAINER_NAME: promtail
+  TASK_DEFINITION_PATH: ./unstage-config/ecs/promtail-task-definition-dev.json
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          submodules: true
+          token: ${{ secrets.PRIVATE_REPO_ACCESS_TOKEN }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY_ID }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        id: build-image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ env.ECR_REPOSITORY_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE_URI=$REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker build -t $IMAGE_URI -f $DOCKERFILE_PROMTAIL_PATH .
+          docker push $IMAGE_URI
+          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.TASK_DEFINITION_PATH }}
+          container-name: ${{ env.TASK_DEFINITION_CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition to ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE_NAME }}
+          cluster: ${{ env.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true # 서비스 안정성 확보 후 워크플로우 종료
+          force-new-deployment: true # 동일 태스크 정의라도 강제 재배포

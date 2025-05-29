@@ -62,7 +62,7 @@ project(":api") {
         dependsOn("copyApiConfigInProd")
     }
     tasks.register<Copy>("copyApiConfigInProd") {
-        from("${project.rootDir}/withins-config/api/main")
+        from("${project.rootDir}/config/api/main")
         include("**/*.yml")
         into("${project.rootDir}/api/src/main/resources")
     }
@@ -71,7 +71,7 @@ project(":api") {
         dependsOn("copyApiConfigInTest")
     }
     tasks.register<Copy>("copyApiConfigInTest") {
-        from("${project.rootDir}/withins-config/api/test")
+        from("${project.rootDir}/config/api/test")
         include("**/*.yml")
         into("${project.rootDir}/api/src/test/resources")
     }
@@ -94,7 +94,7 @@ project(":core") {
         dependsOn("copyCoreConfigInProd")
     }
     tasks.register<Copy>("copyCoreConfigInProd") {
-        from("${project.rootDir}/withins-config/core/main")
+        from("${project.rootDir}/config/core/main")
         include("**/*.yml")
         into("${project.rootDir}/core/src/main/resources")
     }
@@ -103,7 +103,7 @@ project(":core") {
         dependsOn("copyCoreConfigInTest")
     }
     tasks.register<Copy>("copyCoreConfigInTest") {
-        from("${project.rootDir}/withins-config/core/test")
+        from("${project.rootDir}/config/core/test")
         include("**/*.yml")
         into("${project.rootDir}/core/src/test/resources")
     }
@@ -114,7 +114,7 @@ project(":support:monitoring") {
         dependsOn("copyCoreConfigInProd")
     }
     tasks.register<Copy>("copyCoreConfigInProd") {
-        from("${project.rootDir}/withins-config/monitoring")
+        from("${project.rootDir}/config/monitoring")
         include("**/*.yml")
         into("${project.rootDir}/support/monitoring/src/main/resources")
     }

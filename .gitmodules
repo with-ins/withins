@@ -1,0 +1,3 @@
+[submodule "withins_server/config"]
+	path = withins_server/config
+	url = https://github.com/with-ins/withins-config.git

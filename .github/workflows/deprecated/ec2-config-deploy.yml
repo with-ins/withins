@@ -1,0 +1,36 @@
+name: ec2-config-deploy
+
+on:
+  workflow_dispatch:
+
+env:
+  S3_BUCKET_NAME: unstage-deploy-bucket
+  PROJECT_NAME: unstage-ec2-config
+
+jobs:
+  deploy-config:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout config repository
+        uses: actions/checkout@v4.2.2
+        with:
+          repository: unstage-dev/unstage-config
+          token: ${{ secrets.PRIVATE_REPO_ACCESS_TOKEN }}
+
+      - name: Make zip file
+        run: zip -r ./$GITHUB_SHA.zip .
+        shell: bash
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_S3_DEPLOY_BUCKET_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_S3_DEPLOY_BUCKET_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Upload to S3
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$PROJECT_NAME/$GITHUB_SHA.zip
+
+      - name: Code Deploy
+        run: aws deploy create-deployment --application-name unstage-config-codedeploy --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name config-develop --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip
