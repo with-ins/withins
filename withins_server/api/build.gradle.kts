@@ -45,10 +45,11 @@ node {
 
 // Vue.js 빌드 태스크 정의
 tasks.register<com.github.gradle.node.npm.task.NpmTask>("buildFrontend") {
+    dependsOn("npmSetup", "npmInstall")
     npmCommand.set(listOf("run", "build"))
 
     /*
-    false이면 매번 buildFrontend 태스크가 실행됨
+    false면 항상 빌드하도록 강제
     만약 로컬환경에서는 파일이 변경될때만 빌드하길 원한다면, 로컬에서만 설정하고 배포환경에서는 항상 빌드하도록 설정해야함
      */
     outputs.upToDateWhen { false }
