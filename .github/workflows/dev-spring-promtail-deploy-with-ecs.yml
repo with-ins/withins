@@ -1,19 +1,22 @@
-name: was-promtail-deploy-with-ecs
+name: dev-spring-promtail-deploy-with-ecs
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - dev
 
 env:
-  ECR_WAS_REPO_NAME: unstage/spring
-  ECR_PROMTAIL_REPO_NAME: unstage/promtail
-  DOCKERFILE_SPRING_PATH: ./unstage-config/ec2/Dockerfile.spring
-  DOCKERFILE_PROMTAIL_PATH: ./unstage-config/ec2/Dockerfile.promtail
+  ECR_WAS_REPO_NAME: dev/spring
+  ECR_PROMTAIL_REPO_NAME: dev/promtail
+  DOCKERFILE_SPRING_PATH: ./withins_server/config/dev/docker/Dockerfile.spring
+  DOCKERFILE_PROMTAIL_PATH: ./withins_server/config/dev/docker/Dockerfile.promtail
   ECS_CLUSTER_NAME: unstage-cluster
   ECS_SERVICE_NAME: spring-promtail-service
   TASK_DEFINITION_CONTAINER_NAME: was-promtail-spring
-  TASK_TEMPLATE_PATH: ./unstage-config/ecs/spring-promtail-task-definition-dev.json
+  TASK_TEMPLATE_PATH: ./withins_server/config/dev/task-definition/spring-promtail-task-definition-dev.json
   # TASK_DEFINITION_OUTPUT_PATH는 Github Actions 가상환경에서 생성되는 파일
-  TASK_DEFINITION_OUTPUT_PATH: ./unstage-config/ecs/rendered-task-definition.json
+  TASK_DEFINITION_OUTPUT_PATH: ./withins_server/config/dev/task-definition/rendered-task-definition.json
 
 jobs:
   build:
@@ -33,14 +36,17 @@ jobs:
           java-version: '21'
 
       - name: Grant execute permission for gradlew
+        working-directory: withins_server
         run: chmod +x gradlew
         shell: bash
 
       - name: Execute tests
+        working-directory: withins_server
         run: ./gradlew test
         shell: bash
 
       - name: Build with Gradle
+        working-directory: withins_server
         run: ./gradlew clean :api:bootJar
         shell: bash
 
