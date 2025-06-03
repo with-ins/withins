@@ -1,7 +1,9 @@
 package com.withins.core.user.service;
 
 import com.withins.core.config.IntegrationTest;
+import com.withins.core.user.entity.Provider;
 import com.withins.core.user.entity.Role;
+import com.withins.core.user.entity.SocialUser;
 import com.withins.core.user.entity.User;
 import com.withins.core.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -22,8 +24,9 @@ class UserServiceTest extends IntegrationTest {
     void 이미_가입된_회원은_로그인시_재가입되지_않는다() {
         //given
         userRepository.save(
-                User.builder()
-                        .socialUserId("testSocialUserId")
+                SocialUser.builder()
+                        .provider(Provider.KAKAO)
+                        .providerId("testSocialUserId")
                         .nickname("testNickname")
                         .role(Role.USER)
                         .build()
