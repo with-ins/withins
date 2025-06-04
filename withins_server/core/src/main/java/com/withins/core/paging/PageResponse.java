@@ -1,6 +1,10 @@
 package com.withins.core.paging;
 
-import java.util.List;
 
-public record PageResponse<T>(int totalPages, long totalElements, int number, int size, List<T> content) {
+public record PageResponse(long totalElements, int totalPages, int pageNumber) {
+
+    public static PageResponse of(long totalElements, int totalPages, int pageNumber) {
+        return new PageResponse(totalElements, totalPages, pageNumber);
+    }
+
 }
