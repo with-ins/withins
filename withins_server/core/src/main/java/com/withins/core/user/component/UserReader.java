@@ -1,6 +1,7 @@
 package com.withins.core.user.component;
 
 import com.withins.core.exception.EntityNotFoundException;
+import com.withins.core.user.entity.Provider;
 import com.withins.core.user.entity.Role;
 import com.withins.core.user.entity.User;
 import com.withins.core.user.repository.UserRepository;
@@ -18,7 +19,7 @@ public class UserReader {
     private final UserRepository userRepository;
 
     public Optional<User> readBy(final String socialUserId) {
-        return userRepository.findBySocialUserId(socialUserId);
+        return userRepository.findBySocialUser(Provider.KAKAO, socialUserId);
     }
 
     public Role readRole(final Long userId) {
