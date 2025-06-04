@@ -4,4 +4,8 @@ public enum Provider {
 
     KAKAO;
 
+    public static Provider findByProvider(String clientName) {
+        return Provider.valueOf(clientName.toUpperCase());
+    }
+
 }

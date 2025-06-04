@@ -27,12 +27,19 @@ class UserServiceTest extends IntegrationTest {
                 SocialUser.builder()
                         .provider(Provider.KAKAO)
                         .providerId("testSocialUserId")
+                        .username("testSocialUserId")
                         .nickname("testNickname")
                         .role(Role.USER)
                         .build()
         );
         //when
-        sut.saveOrGet("testSocialUserId", "testNickname");
+        sut.saveOrGet("testSocialUserId", () -> SocialUser.builder()
+            .provider(Provider.KAKAO)
+            .providerId("testSocialUserId")
+            .username("testSocialUserId2")
+            .nickname("testNickname2")
+            .role(Role.USER)
+            .build());
         //then
         List<User> users = userRepository.findAll();
         assertThat(users).hasSize(1);

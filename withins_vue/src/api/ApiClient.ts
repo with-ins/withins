@@ -1,8 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
-import { TokenStorage } from "@/services/TokenStorage";
 
 export class ApiClient {
-  public storage = new TokenStorage();
   private isRefreshing = false;
   private failedQueue: Array<{
     resolve: (value: any) => void;
@@ -15,7 +13,6 @@ export class ApiClient {
 
   private _init() {
     axios.defaults.withCredentials = true;
-    axios.defaults.baseURL = process.env.VUE_APP_API_URL || 'http://localhost:8080';
     axios.defaults.timeout = 10000; // 10초
     axios.defaults.headers.common['Content-Type'] = 'application/json';
 
@@ -91,21 +88,21 @@ export class ApiClient {
 
   private isTokenRefreshRequest(config: any): boolean {
     if (!config?.url) return false;
-    return config.url === '/auth/refresh';
+    return config.url === '/api/v1/auth/refresh';
   }
 
   private async _handleTokenExpired() {
-
+    await authApi.logout();
     // 로그인 페이지로 리다이렉트
-    if (window.location.pathname !== '/login') {
-      window.location.href = '/login?expired';
-    }
+    // if (window.location.pathname !== '/login') {
+    //   window.location.href = '/login?expired';
+    // }
   }
 
   private async refreshToken() : Promise<boolean> {
     try {
 
-      const response = await axios.post('/auth/refresh');
+      const response = await axios.post('/api/v1/auth/refresh');
 
       if (response.status === 200) {
         console.log('Token refreshed successfully');
@@ -127,21 +124,21 @@ export default axios;
 export const authApi = {
 
   formLogin: async (username: string, password: string) => {
-    return await axios.post('/api/login', {
+    return await axios.post('/api/v1/login', {
       username: username,
       password: password
     });
   },
 
   logout: async () => {
-    return await axios.post('/api/logout');
+    return await axios.post('/api/v1/auth/logout');
   }
 }
 
 export const userApi = {
 
   loadUser: async () => {
-    return await axios.get('/api/user');
+    return await axios.get('/api/v1/auth/user');
   }
 }
 export const newsApi = {
