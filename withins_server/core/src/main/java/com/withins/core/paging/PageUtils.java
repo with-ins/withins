@@ -1,38 +1,58 @@
 package com.withins.core.paging;
 
+import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.impl.JPAQuery;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 
-import java.util.List;
+@Component
+@RequiredArgsConstructor
+public class PageUtils {
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public abstract class PageUtils {
-    private static final int DEFAULT_PAGE = 0;
-    private static final int DEFAULT_SIZE = 10;
-    private static final int MAX_SIZE = 30;
+    private final JPAQueryFactory queryFactory;
 
-    public static Pageable createByDefault() {
-        return of(DEFAULT_PAGE, DEFAULT_SIZE);
+
+    public <T> Page<T> of(Pageable pageable, JPAQuery<T> query, EntityPathBase<T> entity) {
+        query.offset(pageable.getOffset());
+        query.limit(pageable.getPageSize());
+
+        JPAQuery<Long> countResult = queryFactory.select(entity.count())
+                .from(entity)
+                .where(query.getMetadata().getWhere());
+
+        return PageableExecutionUtils.getPage(query.fetch(), pageable, countResult::fetchOne);
     }
 
-    public static Pageable of(int page, int sizePerPage) {
-        int validatedPage = Math.max(page, DEFAULT_PAGE);
-        int validatedSize = (sizePerPage > MAX_SIZE ? DEFAULT_SIZE : sizePerPage);
-        return org.springframework.data.domain.PageRequest.of(validatedPage, validatedSize);
+    @Nullable
+    public BooleanExpression filter(StringExpression compare, String condition, boolean ignoreSpace) {
+        if (condition == null || condition.isEmpty()) return null;
+        return ignoreSpace
+            ? replaceExpression(compare).containsIgnoreCase(condition.replace(" ", ""))
+            : compare.containsIgnoreCase(condition);
+    }
+    @Nullable
+    public  <T extends Enum<T>> BooleanExpression filter(EnumPath<T> compare, T condition) {
+        return (condition == null) ? null : compare.eq(condition);
     }
 
-    public static <T> Page<T> toPage(JPAQuery<T> contentQuery, JPAQuery<Long> countQuery, Pageable pageable) {
-        long total = countQuery.fetchOne();
-
-        List<T> content = contentQuery
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-
-        return new PageImpl<>(content, pageable, total);
+    @Nullable
+    @SafeVarargs
+    public final <T extends Enum<T>> BooleanExpression filter(EnumPath<T> compare, T condition, T... excludes) {
+        if (condition == null) return null;
+        for (T exclude : excludes) {
+            if (exclude.equals(condition)) return null;
+        }
+        return compare.eq(condition);
     }
+
+    private StringExpression replaceExpression(StringExpression tuple) {
+        return Expressions.stringTemplate("replace({0}, ' ', '')", tuple);
+    }
+
+
 }
