@@ -26,7 +26,7 @@ public class PrincipalOAuth2UserService extends DefaultOAuth2UserService {
 
         Provider provider = Provider.findByProvider(userRequest.getClientRegistration().getClientName());
         DefaultOAuth2User userInfo = OAuth2Converter.of(provider).convert(oAuth2User);
-        String username = provider + "_" + userInfo.getProviderId();
+        String username = String.format("%s_%s", provider, userInfo.getProviderId());
 
         User user = userService.saveOrGet(username,
                 () -> SocialUser.builder()

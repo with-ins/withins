@@ -46,7 +46,7 @@ public class JwtTokenProvider {
     private ResponseCookie createCookie(String cookieName, @Nullable String token, int expiration, String path) {
         return ResponseCookie.from(cookieName, token)
             .path(path)
-            .sameSite(SameSite.STRICT.attributeValue())
+            .sameSite(SameSite.LAX.attributeValue())
             .httpOnly(true)
             .secure(true)
             .maxAge(expiration)

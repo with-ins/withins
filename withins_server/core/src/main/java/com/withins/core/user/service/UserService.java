@@ -31,12 +31,10 @@ public class UserService {
                 });
     }
 
-    @Transactional(readOnly = true)
     public Optional<User> readByUsername(final String username) {
         return userReader.readByUsername(username);
     }
 
-    @Transactional(readOnly = true)
     public UserInfoResponse readUserInfo(Long memberId) {
         User user = userReader.read(memberId);
         return new UserInfoResponse(user.getNickname(), user.getRole());

@@ -3,7 +3,6 @@ package com.withins.api.auth.auth2.converter;
 import com.withins.core.user.entity.Provider;
 import lombok.*;
 
-@ToString
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
