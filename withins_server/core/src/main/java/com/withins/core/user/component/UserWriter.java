@@ -3,6 +3,7 @@ package com.withins.core.user.component;
 import com.withins.core.user.entity.Provider;
 import com.withins.core.user.entity.Role;
 import com.withins.core.user.entity.SocialUser;
+import com.withins.core.user.entity.User;
 import com.withins.core.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,9 @@ public class UserWriter {
 
     private final UserRepository userRepository;
 
+    public User save(final User user) {
+        return userRepository.save(user);
+    }
     public Long save(final String socialUserId, final String nickname) {
         return userRepository.save(
                 SocialUser.builder()

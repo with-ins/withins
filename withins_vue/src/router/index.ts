@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import { authGuard } from "./guards";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -10,16 +10,12 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     component: () => import('../views/LoginView.vue'),
+    meta: { requiresAuth: false },
     children: [
       {
         path: '',
         name: 'login',
         component: () => import('../pages/login/LoginPage.vue'),
-      },
-      {
-        path: 'success',
-        name: 'login success',
-        component: () => import('../pages/login/LoginSuccessPage.vue'),
       },
     ]
   },
@@ -55,6 +51,7 @@ const routes: Array<RouteRecordRaw> = [
     path: "/career",
     name: "careerProfile",
     component: () => import("../views/CareerProfileView.vue"),
+    meta: { requiresAuth: true },
     children: [
       {
         path: "",
@@ -63,6 +60,19 @@ const routes: Array<RouteRecordRaw> = [
       }
     ]
   },
+  // {
+  //   path: "/admin",
+  //   name: "admin",
+  //   component: () => import("../views/AdminView.vue"),
+  //   meta: { requiresAuth: true, requiresAdmin: true },
+  //   children: [
+  //     {
+  //       path: "",
+  //       name: "adminDashboard",
+  //       component: () => import("../pages/admin/AdminDashboard.vue"),
+  //     }
+  //   ]
+  // },
   // 존재하지 않는 경로에 대한 처리
   {
     path: "/:pathMatch(.*)*",
@@ -70,9 +80,12 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import("../views/error/NotFoundView.vue"),
   }
 ];
+
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
 });
+
+router.beforeEach(authGuard);
 
 export default router;

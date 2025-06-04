@@ -24,8 +24,8 @@
     <div id="h-right">
       <RouterLink to="/login" v-if="isAnonymous">로그인</RouterLink>
       <div id="user-info-wrap" v-else>
-        <button type="button" id="user-icon" @click="showModal = !showModal">{{ user.nickname }}</button>
-        <div class="modal" v-if="showModal">
+        <button type="button" id="user-icon" ref="userButton" @click="showModal = !showModal">{{ user?.nickname }}</button>
+        <div v-if="showModal" ref="modal" class="modal" @click="showModal = false">
           <RouterLink to="/user/info" class="modal-item">개인정보수정</RouterLink>
           <button type="button" @click="logout" class="modal-item logout">로그아웃</button>
         </div>
@@ -35,9 +35,10 @@
 </template>
 
 <script setup lang="ts">
+import { RouterLink } from 'vue-router';
 import { useUserStore } from "@/stores/UserStore";
 import { storeToRefs } from "pinia";
-import { computed, onMounted, ref } from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import { useRouter } from "vue-router";
 
 const userStore = useUserStore();
@@ -45,19 +46,36 @@ const { isAnonymous, user } = storeToRefs(userStore);
 
 const router = useRouter();
 
-const showModal = ref(true);
+const showModal = ref(false);
+const userButton = ref<HTMLElement | null>(null);
+const modal = ref<HTMLElement | null>(null);
 onMounted(async () => {
-  await userStore.getUserData();
+  document.addEventListener('click', handleClickOutside);
+})
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
 })
 
+const handleClickOutside = (event: MouseEvent) => {
+  // event.target이 Node인지 확인
+  if (!event.target || !(event.target instanceof Node)) {
+    return;
+  }
+
+  if (showModal.value &&
+      userButton.value && !userButton.value.contains(event.target) &&
+      (!modal.value || !modal.value.contains(event.target))) {
+    showModal.value = false;
+  }
+}
 const logout = async () => {
   await userStore.logout(
-    (res: any) => {
-      router.push("/login?logout");
-    },
-    (error: any) => {
-      console.log('로그아웃 실패', error);
-    }
+      (res: any) => {
+        router.push("/login?logout");
+      },
+      (error: any) => {
+        console.log('로그아웃 실패', error);
+      }
   );
 }
 </script>

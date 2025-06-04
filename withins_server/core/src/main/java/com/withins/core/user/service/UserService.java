@@ -2,12 +2,15 @@ package com.withins.core.user.service;
 
 import com.withins.core.user.component.UserReader;
 import com.withins.core.user.component.UserWriter;
-import com.withins.core.user.entity.Role;
+import com.withins.core.user.dto.UserInfoResponse;
 import com.withins.core.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -19,17 +22,23 @@ public class UserService {
 
     @Transactional
     //TODO AOP를 통한 회원가입 모니터링 구축 필요
-    public Long saveOrGet(final String idFromIdToken, final String nickname) {
-        return userReader.readBy(idFromIdToken)
-                .map(User::getId)
+    public User saveOrGet(final String username, Supplier<? extends User> orElseGet) {
+        return userReader.readByUsername(username)
                 .orElseGet(() -> {
-                    final Long userId = userWriter.save(idFromIdToken, nickname);
-                    log.info("유저 회원가입 완료 - userId={}", userId);
-                    return userId;
+                    final User user = userWriter.save(orElseGet.get());
+                    log.info("유저 회원가입 완료 - userId={}", user.getId());
+                    return user;
                 });
     }
 
-    public Role getRole(final Long userId) {
-        return userReader.readRole(userId);
+    @Transactional(readOnly = true)
+    public Optional<User> readByUsername(final String username) {
+        return userReader.readByUsername(username);
+    }
+
+    @Transactional(readOnly = true)
+    public UserInfoResponse readUserInfo(Long memberId) {
+        User user = userReader.read(memberId);
+        return new UserInfoResponse(user.getNickname(), user.getRole());
     }
 }

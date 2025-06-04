@@ -13,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public final class OrgUser extends User {
 
+    private String password;
 
     @Override
     protected String getDiscriminatorValue() {
