@@ -48,7 +48,7 @@ public class JwtTokenProvider {
             .path(path)
             .sameSite(SameSite.LAX.attributeValue())
             .httpOnly(true)
-            .secure(true)
+            .secure(false)
             .maxAge(expiration)
             .build();
     }
