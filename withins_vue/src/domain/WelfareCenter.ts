@@ -1,13 +1,13 @@
 import { KoreanRegion } from "@/domain/KoreanRegion";
 
-export class Organization {
+export class WelfareCenter {
 
-    public organizationId : Number;
+    public welfareCenterId : Number;
     public name : String;
     public region : KoreanRegion;
 
     public constructor(data : any) {
-        this.organizationId = data.organizationId;
+        this.welfareCenterId = data.welfareCenterId;
         this.name = data.name;
         this.region = KoreanRegion.getRegionByKey(data.region);
     }

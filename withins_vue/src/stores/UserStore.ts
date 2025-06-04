@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
 import { computed, Ref, ref } from "vue";
-import { Member } from "@/domain/Member";
+import { User } from "@/domain/User";
 import { apiClient, authApi, userApi } from "@/api/ApiClient";
 
 export const useUserStore = defineStore('user', () => {
-    const user: Ref<Member | null> = ref(null)
+    const user: Ref<User | null> = ref(null)
     const isInitialized = ref(false)
 
     const initialize = async () => {
@@ -40,7 +40,7 @@ export const useUserStore = defineStore('user', () => {
             .then(res => {
                 if (res.status === 200) {
                     let data = res.data;
-                    user.value = new Member(data);
+                    user.value = new User(data);
                 }
             })
             .catch(err => {

@@ -17,7 +17,7 @@
       </button>
       <ol class="page_list">
         <li v-for="i in visiblePageButtons" :key="i" class="page" :class="{selected : i === currentPage}">
-          <button @click="goToPage(i)" type="button" class="page_link">{{ i }}</button>
+          <button @click="goToPage(i)" :disabled="i == currentPage" type="button" class="page_link">{{ i }}</button>
         </li>
       </ol>
       <button @click="goToNext()" :disabled="currentPage >= totalPages" type="button" class="button_next">
@@ -164,9 +164,6 @@ function updateSearchParams(params: Record<string, any>) {
 
 // 페이지 이동 함수 (URL 업데이트 포함)
 function navigateToPage(page: number) {
-  if (element.value) {
-    element.value.scrollIntoView({ behavior : 'auto'})
-  }
   currentPage.value = page;
   updateUrl();
   loadData();
@@ -316,6 +313,7 @@ defineExpose({
   border: 1px var(--main-color-1) solid;
   background: white;
   color: var(--main-color-1);
+  cursor: default;
 }
 
 

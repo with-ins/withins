@@ -2,7 +2,7 @@
   <!-- 세부 정보 컴포넌트 내용 -->
   <article>
     <div id="article-header">
-      <h3>{{recruitDetail.organization.name}}</h3>
+      <h3>{{recruitDetail.welfareCenter.name}}</h3>
       <h1>{{recruitDetail.title}}</h1>
       <span>{{recruitDetail.getCreateAt()}}</span>
     </div>
@@ -13,7 +13,7 @@
       </div>
       <div class="info-wrap">
         <div class="info-title">지역</div>
-        <div class="info-content">{{recruitDetail.organization.region}}</div>
+        <div class="info-content">{{recruitDetail.welfareCenter.region}}</div>
       </div>
       <div class="info-wrap">
         <div class="info-title">모집일</div>
