@@ -112,11 +112,31 @@ project(":core") {
 
 project(":support:monitoring") {
     tasks.named<ProcessResources>("processResources") {
-        dependsOn("copyCoreConfigInProd")
+        dependsOn("copyMonitoringConfigInProd")
     }
-    tasks.register<Copy>("copyCoreConfigInProd") {
+    tasks.register<Copy>("copyMonitoringConfigInProd") {
         from("${project.rootDir}/config/monitoring")
         include("**/*.yml")
         into("${project.rootDir}/support/monitoring/src/main/resources")
+    }
+}
+
+project(":crawl-batch") {
+    tasks.named<ProcessResources>("processResources") {
+        dependsOn("copyCrawlBatchConfigInProd")
+    }
+    tasks.register<Copy>("copyCrawlBatchConfigInProd") {
+        from("${project.rootDir}/config/crawl-batch/main")
+        include("**/*.yml")
+        into("${project.rootDir}/crawl-batch/src/main/resources")
+    }
+
+    tasks.named<ProcessResources>("processTestResources") {
+        dependsOn("copyCrawlBatchConfigInTest")
+    }
+    tasks.register<Copy>("copyCrawlBatchConfigInTest") {
+        from("${project.rootDir}/config/crawl-batch/test")
+        include("**/*.yml")
+        into("${project.rootDir}/crawl-batch/src/test/resources")
     }
 }
