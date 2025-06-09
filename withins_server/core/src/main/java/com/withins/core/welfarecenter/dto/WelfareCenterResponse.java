@@ -8,13 +8,12 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class WelfareCenterRequest {
+public class WelfareCenterResponse {
 
     private final String name;
     private final KoreanRegion region;
 
-
-    public static WelfareCenterRequest of(WelfareCenter welfareCenter) {
-        return new WelfareCenterRequest(welfareCenter.getName(), welfareCenter.getRegion());
+    public static WelfareCenterResponse of(WelfareCenter welfareCenter) {
+        return new WelfareCenterResponse(welfareCenter.getName(), welfareCenter.getRegion());
     }
 }

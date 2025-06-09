@@ -2,7 +2,7 @@ package com.withins.core.news.service;
 
 import com.withins.core.news.component.NewsReader;
 import com.withins.core.news.dto.NewsCondition;
-import com.withins.core.news.dto.NewsRequest;
+import com.withins.core.news.dto.NewsResponse;
 import com.withins.core.paging.PageParams;
 import com.withins.core.paging.PageWith;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +19,9 @@ public class NewsService {
 
     private final NewsReader newsReader;
 
-    public PageWith<NewsRequest> search(PageParams pageParams, NewsCondition condition) {
+    public PageWith<NewsResponse> search(PageParams pageParams, NewsCondition condition) {
         Pageable pageable = PageRequest.of(pageParams.page(), pageParams.size());
-        Page<NewsRequest> newsRequest = newsReader.search(pageable, condition);
+        Page<NewsResponse> newsRequest = newsReader.search(pageable, condition);
         return PageWith.of(condition, newsRequest);
     }
 }

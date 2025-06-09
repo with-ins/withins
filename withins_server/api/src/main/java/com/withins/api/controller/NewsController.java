@@ -1,7 +1,7 @@
 package com.withins.api.controller;
 
 import com.withins.core.news.dto.NewsCondition;
-import com.withins.core.news.dto.NewsRequest;
+import com.withins.core.news.dto.NewsResponse;
 import com.withins.core.news.service.NewsService;
 import com.withins.core.paging.PageParams;
 import com.withins.core.paging.PageWith;
@@ -20,8 +20,8 @@ public class NewsController {
     private final NewsService newsService;
 
     @GetMapping
-    public ResponseEntity<PageWith<NewsRequest>> getNews(@ModelAttribute final PageParams pageParams,
-                                                         @ModelAttribute final NewsCondition condition) {
+    public ResponseEntity<PageWith<NewsResponse>> getNews(@ModelAttribute PageParams pageParams,
+                                                          @ModelAttribute NewsCondition condition) {
         var newsPageWith = newsService.search(pageParams, condition);
         return ResponseEntity.ok(newsPageWith);
     }

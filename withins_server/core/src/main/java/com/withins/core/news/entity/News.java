@@ -4,10 +4,7 @@ import com.withins.core.BaseEntity;
 import com.withins.core.news.enums.NewsType;
 import com.withins.core.welfarecenter.entity.WelfareCenter;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -15,6 +12,7 @@ import java.time.LocalDate;
 @Table(name = "news")
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 @Getter
 public class News extends BaseEntity {
 
