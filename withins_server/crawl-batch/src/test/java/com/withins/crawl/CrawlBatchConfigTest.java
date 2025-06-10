@@ -1,8 +1,11 @@
 package com.withins.crawl;
 
+import com.withins.core.welfarecenter.entity.News;
 import com.withins.core.welfarecenter.entity.WelfareCenter;
+import com.withins.core.welfarecenter.repository.NewsRepository;
 import com.withins.core.welfarecenter.repository.WelfareCenterRepository;
 import com.withins.crawl.config.BatchTest;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +39,8 @@ class CrawlBatchConfigTest extends BatchTest {
 
     @Autowired
     private WelfareCenterRepository welfareCenterRepository;
+    @Autowired
+    private NewsRepository newsRepository;
 
     private JobLauncherTestUtils jobLauncherTestUtils;
 
@@ -75,7 +80,15 @@ class CrawlBatchConfigTest extends BatchTest {
         System.out.println("successfulS3Paths: " + jobExecution.getExecutionContext().get("successfulS3Paths", List.class).get(0));
         assertThat(jobExecution.getExecutionContext().containsKey("failedCenters")).isTrue();
 
-        // You can add more assertions based on your specific requirements
+        List<News> all = newsRepository.findAll();
+        all.forEach(
+                (a) -> System.out.println("newsId: " + a.getId() +
+                        " newsTitle: " + a.getTitle() +
+                        " newsCategory: "  + a.getType() +
+                        " link: " + a.getLink())
+        );
+
+        assertThat(all.size()).isNotZero();
     }
 
 }

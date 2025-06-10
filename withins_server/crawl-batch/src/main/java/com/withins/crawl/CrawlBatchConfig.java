@@ -1,7 +1,6 @@
 package com.withins.crawl;
 
-import com.withins.core.welfarecenter.entity.Post;
-import com.withins.core.welfarecenter.entity.WelfareCenter;
+import com.withins.core.welfarecenter.entity.News;
 import com.withins.core.welfarecenter.repository.WelfareCenterRepository;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +12,6 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.database.JpaItemWriter;
-import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
-import org.springframework.batch.item.file.MultiResourceItemReader;
-import org.springframework.batch.item.json.JacksonJsonObjectReader;
-import org.springframework.batch.item.json.JsonItemReader;
-import org.springframework.batch.item.json.builder.JsonItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,8 +27,6 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class CrawlBatchConfig {
-    public static final int CHUNK_SIZE = 1;
-
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
     private final EntityManagerFactory entityManagerFactory;
@@ -49,7 +40,7 @@ public class CrawlBatchConfig {
     public Job crawlingJob() {
         return new JobBuilder("crawlingJob", jobRepository)
                 .start(lambdaCrawlingStep())
-//                .next(processS3FilesStep())
+                .next(processS3FilesStep())
                 .build();
     }
 
@@ -79,22 +70,22 @@ public class CrawlBatchConfig {
         );
     }
 
-//    @Bean
-//    public Step processS3FilesStep() {
-//        return new StepBuilder("processS3FilesStep", jobRepository)
-//                .<PostDto, Post>chunk(CHUNK_SIZE, transactionManager)
-//                .reader(multiS3Reader(null))
-//                .processor(itemProcessor())
-//                .writer(jpaItemWriter())
-//                .build();
-//    }
-//
+    @Bean
+    public Step processS3FilesStep() {
+        return new StepBuilder("processS3FilesStep", jobRepository)
+                .<List<NewsDto>, List<News>>chunk(1, transactionManager) // 청크 크기는 1로 유지 (각 파일이 하나의 청크)
+                .reader(s3NewsFileItemReader(null))
+                .processor(newsItemProcessor())
+                .writer(listNewsItemWriter())
+                .build();
+    }
+
 //    @Bean
 //    @StepScope
-//    public MultiResourceItemReader<PostDto> multiS3Reader(
+//    public MultiResourceItemReader<NewsDto> multiS3NewsReader(
 //            @Value("#{jobExecutionContext['successfulS3Paths']}") List<String> s3Paths) {
 //
-//        MultiResourceItemReader<PostDto> multiReader = new MultiResourceItemReader<>();
+//        MultiResourceItemReader<NewsDto> multiReader = new MultiResourceItemReader<>();
 //
 //        if (s3Paths != null && !s3Paths.isEmpty()) {
 //            // S3 경로 목록을 Resource 배열로 변환
@@ -103,7 +94,7 @@ public class CrawlBatchConfig {
 //                    .toArray(Resource[]::new);
 //
 //            multiReader.setResources(resources);
-//            multiReader.setDelegate(s3JsonItemReader());
+//            multiReader.setDelegate(s3JsonNewsItemReader());
 //
 //            log.info("Configured MultiResourceItemReader with {} S3 resources", resources.length);
 //        } else {
@@ -112,34 +103,46 @@ public class CrawlBatchConfig {
 //
 //        return multiReader;
 //    }
-//
+
 //    @Bean
-//    public JsonItemReader<PostDto> s3JsonItemReader() {
-//        return new JsonItemReaderBuilder<PostDto>()
-//                .name("s3JsonItemReader")
-//                .jsonObjectReader(new JacksonJsonObjectReader<>(PostDto.class))
+//    public JsonItemReader<NewsDto> s3JsonNewsItemReader() {
+//        return new JsonItemReaderBuilder<NewsDto>()
+//                .name("s3JsonNewsItemReader")
+//                .jsonObjectReader(new JacksonJsonObjectReader<>(NewsDto.class))
 //                .build();
 //    }
 
+    @Bean
+    public ItemProcessor<List<NewsDto>, List<News>> newsItemProcessor() {
+        return new ListNewsItemProcessor(welfareCenterRepository);
+    }
+
 //    @Bean
-//    public ItemProcessor<PostDto, Post> itemProcessor() {
-//        return item -> {
-//            WelfareCenter welfareCenter = welfareCenterRepository.findByName(item.getWelfareCenterName())
-//                    .orElseThrow(IllegalArgumentException::new);
-//
-//            return Post.builder()
-//                    .url(item.getUrl())
-//                    .title(item.getTitle())
-//                    .welfareCenter(welfareCenter)
-//                    .build();
-//        };
-//    }
-//
-//    @Bean
-//    public JpaItemWriter<Post> jpaItemWriter() {
-//        return new JpaItemWriterBuilder<Post>()
+//    public JpaItemWriter<News> jpaNewsItemWriter() {
+//        return new JpaItemWriterBuilder<News>()
 //                .entityManagerFactory(entityManagerFactory)
 //                .usePersist(true)
 //                .build();
 //    }
+
+    @Bean
+    public ListNewsItemWriter listNewsItemWriter() {
+        return new ListNewsItemWriter(entityManagerFactory);
+    }
+
+    @Bean
+    @StepScope
+    public S3NewsFileItemReader s3NewsFileItemReader(
+            @Value("#{jobExecutionContext['successfulS3Paths']}") List<String> s3Paths) {
+
+        if (s3Paths != null && !s3Paths.isEmpty()) {
+            List<Resource> resources = s3Paths.stream()
+                    .map(S3Resource::new)
+                    .collect(java.util.stream.Collectors.toList());
+
+            return new S3NewsFileItemReader(resources);
+        }
+
+        return new S3NewsFileItemReader(java.util.Collections.emptyList());
+    }
 }
