@@ -20,7 +20,7 @@ public record NewsResponse(Long newsId,
             news.getType(),
             news.getLink(),
             WelfareCenterResponse.of(news.getWelfareCenter()),
-            news.getCreatedAt()
+            news.getNewsCreatedAt()
         );
     }
 }

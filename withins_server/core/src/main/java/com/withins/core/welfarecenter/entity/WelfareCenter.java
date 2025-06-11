@@ -1,5 +1,6 @@
 package com.withins.core.welfarecenter.entity;
 
+import com.withins.core.BaseEntity;
 import com.withins.core.news.enums.KoreanRegion;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Builder
-public class WelfareCenter {
+public class WelfareCenter extends BaseEntity {
 
     @Id
     @Column(name = "welfare_center_id")

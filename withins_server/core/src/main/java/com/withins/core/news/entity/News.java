@@ -20,8 +20,6 @@ public class News extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long baseId;
-
     @Column(nullable = false)
     private String title;
 
@@ -33,7 +31,10 @@ public class News extends BaseEntity {
     private String link;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "welfare_center_id")
+    @JoinColumn(
+        name = "welfare_center_id",
+        foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
     private WelfareCenter welfareCenter;
-    private LocalDate createdAt;
+    private LocalDate newsCreatedAt;
 }
