@@ -30,7 +30,7 @@ public class NewsQDSLRepository {
         JPAQuery<News> jpaQuery = query.selectFrom(news)
                 .join(news.welfareCenter, welfareCenter)
                 .where(conditions)
-                .orderBy(news.createdAt.desc());
+                .orderBy(news.newsCreatedAt.desc());
 
         return pageUtils.of(pageable, jpaQuery, news);
     }
