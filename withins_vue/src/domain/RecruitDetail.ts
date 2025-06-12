@@ -1,4 +1,4 @@
-import {Organization} from "@/domain/Organization";
+import {WelfareCenter} from "@/domain/WelfareCenter";
 import {AttachedFile} from "@/domain/AttachedFile";
 
 export class RecruitDetail {
@@ -7,7 +7,7 @@ export class RecruitDetail {
     public content : String;
     public type : String;
     public attachedFiles : Array<AttachedFile> = [];
-    public organization : Organization;
+    public organization : WelfareCenter;
     private createAt : Date;
     private deadline : Date;
 
@@ -17,7 +17,7 @@ export class RecruitDetail {
         this.content = data.content;
         this.type = data.type;
         this.attachedFiles = data.attachedFiles?.map((x : any) => new AttachedFile(x)) ?? [];
-        this.organization = new Organization(data.organization);
+        this.organization = new WelfareCenter(data.organization);
         this.createAt = new Date(data.createAt);
         this.deadline = new Date(data.deadline);
     }

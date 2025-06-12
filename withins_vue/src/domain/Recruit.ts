@@ -1,16 +1,16 @@
-import {Organization} from "@/domain/Organization";
+import {WelfareCenter} from "@/domain/WelfareCenter";
 
 export class Recruit {
     public recruitId: Number;
     public title : String;
-    public organization : Organization;
+    public organization : WelfareCenter;
     private createAt : Date;
     private deadline : Date;
 
     public constructor(data : any) {
         this.recruitId = data.recruitId;
         this.title = data.title;
-        this.organization = new Organization(data.organization);
+        this.organization = new WelfareCenter(data.organization);
         this.createAt = new Date(data.createAt);
         this.deadline = new Date(data.deadline);
     }
