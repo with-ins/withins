@@ -7,7 +7,7 @@ export class RecruitDetail {
     public content : String;
     public type : String;
     public attachedFiles : Array<AttachedFile> = [];
-    public organization : WelfareCenter;
+    public welfareCenter : WelfareCenter;
     private createAt : Date;
     private deadline : Date;
 
@@ -17,7 +17,7 @@ export class RecruitDetail {
         this.content = data.content;
         this.type = data.type;
         this.attachedFiles = data.attachedFiles?.map((x : any) => new AttachedFile(x)) ?? [];
-        this.organization = new WelfareCenter(data.organization);
+        this.welfareCenter = new WelfareCenter(data.welfareCenter);
         this.createAt = new Date(data.createAt);
         this.deadline = new Date(data.deadline);
     }

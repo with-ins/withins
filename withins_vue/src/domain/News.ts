@@ -1,10 +1,10 @@
-import { Organization } from "@/domain/Organization";
+import {WelfareCenter} from "@/domain/WelfareCenter";
 
 
 export class News {
     public newsId: number;
     public title : string;
-    public organization : Organization;
+    public welfareCenter : WelfareCenter;
     public type : string;
     public link : string;
     public createdAt : Date;
@@ -14,7 +14,7 @@ export class News {
         this.title = data.title;
         this.type = data.type;
         this.link = data.link;
-        this.organization = new Organization(data.organization);
+        this.welfareCenter = new WelfareCenter(data.welfareCenter);
         this.createdAt = new Date(data.createdAt);
     }
 
