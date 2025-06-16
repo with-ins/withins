@@ -1,6 +1,6 @@
 package com.withins.crawl;
 
-import com.withins.core.welfarecenter.entity.News;
+import com.withins.core.news.entity.News;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.item.Chunk;

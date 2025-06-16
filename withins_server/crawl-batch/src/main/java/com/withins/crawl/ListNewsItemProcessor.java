@@ -1,14 +1,13 @@
 package com.withins.crawl;
 
-import com.withins.core.welfarecenter.entity.News;
-import com.withins.core.welfarecenter.entity.NewsType;
+import com.withins.core.news.entity.News;
+import com.withins.core.news.enums.NewsType;
 import com.withins.core.welfarecenter.entity.WelfareCenter;
 import com.withins.core.welfarecenter.repository.WelfareCenterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemProcessor;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 

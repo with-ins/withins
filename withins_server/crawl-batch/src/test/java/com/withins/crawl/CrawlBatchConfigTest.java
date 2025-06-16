@@ -1,14 +1,12 @@
 package com.withins.crawl;
 
-import com.withins.core.welfarecenter.entity.News;
+import com.withins.core.news.entity.News;
+import com.withins.core.news.enums.KoreanRegion;
+import com.withins.core.news.repository.NewsRepository;
 import com.withins.core.welfarecenter.entity.WelfareCenter;
-import com.withins.core.welfarecenter.repository.NewsRepository;
 import com.withins.core.welfarecenter.repository.WelfareCenterRepository;
 import com.withins.crawl.config.BatchTest;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -20,11 +18,9 @@ import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class CrawlBatchConfigTest extends BatchTest {
     @Autowired
@@ -50,7 +46,7 @@ class CrawlBatchConfigTest extends BatchTest {
         if (welfareCenterRepository.count() == 0) {
             WelfareCenter testCenter = WelfareCenter.builder()
                     .name("오정노인복지관")
-                    .region("인천")
+                    .region(KoreanRegion.BUCHEON)
                     .build();
             welfareCenterRepository.save(testCenter);
         }
@@ -66,7 +62,7 @@ class CrawlBatchConfigTest extends BatchTest {
     public void testCrawlingJob() throws Exception {
         // Create job parameters
         JobParameters jobParameters = new JobParametersBuilder()
-                .addString("syncDate", "2025-06-06")
+                .addString("targetDate", "2025-06-16")
                 .toJobParameters();
 
         // Run the job
@@ -77,7 +73,7 @@ class CrawlBatchConfigTest extends BatchTest {
 
         // Verify that the job execution context contains the expected keys
         assertThat(jobExecution.getExecutionContext().containsKey("successfulS3Paths")).isTrue();
-        System.out.println("successfulS3Paths: " + jobExecution.getExecutionContext().get("successfulS3Paths", List.class).get(0));
+//        System.out.println("successfulS3Paths: " + jobExecution.getExecutionContext().get("successfulS3Paths", List.class).get(0));
         assertThat(jobExecution.getExecutionContext().containsKey("failedCenters")).isTrue();
 
         List<News> all = newsRepository.findAll();

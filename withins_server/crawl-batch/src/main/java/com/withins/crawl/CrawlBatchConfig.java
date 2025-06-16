@@ -1,6 +1,6 @@
 package com.withins.crawl;
 
-import com.withins.core.welfarecenter.entity.News;
+import com.withins.core.news.entity.News;
 import com.withins.core.welfarecenter.repository.WelfareCenterRepository;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -54,19 +54,18 @@ public class CrawlBatchConfig {
     @Bean
     @StepScope
     public Tasklet lambdaCrawlingTasklet(
-            @Value("#{jobParameters['syncDate']}") String syncDateStr
+            @Value("#{jobParameters['targetDate']}") String targetDate
     ) {
-
         // 문자열 날짜를 LocalDate로 변환
-        LocalDate syncDate = (syncDateStr != null) 
-            ? LocalDate.parse(syncDateStr) 
+        LocalDate date = (targetDate != null)
+            ? LocalDate.parse(targetDate)
             : LocalDate.now(); // 기본값으로 현재 날짜 사용
 
         return new LambdaCrawlingTasklet(
                 LambdaClient.builder().build(),
                 lambdaFunction,
                 welfareCenterRepository,
-                syncDate
+                date
         );
     }
 

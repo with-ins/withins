@@ -18,7 +18,6 @@ import software.amazon.awssdk.services.lambda.model.InvokeResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -27,7 +26,7 @@ public class LambdaCrawlingTasklet implements Tasklet {
     private final LambdaClient lambdaClient;
     private final String functionName;
     private final WelfareCenterRepository welfareCenterRepository;
-    private final LocalDate syncDate;
+    private final LocalDate targetDate;
 
     @Override
     public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) {
@@ -43,7 +42,7 @@ public class LambdaCrawlingTasklet implements Tasklet {
         for (WelfareCenter center : centers) {
             try {
                 // Lambda 함수 호출 페이로드 생성
-                String payload = createPayload(syncDate, center.getName());
+                String payload = createPayload(targetDate, center.getName());
 
                 // Lambda 함수 호출
                 InvokeRequest request = InvokeRequest.builder()
@@ -57,17 +56,14 @@ public class LambdaCrawlingTasklet implements Tasklet {
                 if (result.statusCode() == 200) {
                     // 응답 JSON 파싱
                     String response = new String(result.payload().asByteArray(), StandardCharsets.UTF_8);
-                    // Parse the outer JSON response
+                    // 직접 응답 JSON 파싱 (중첩된 body 필드 없음)
                     JSONObject jsonResponse = new JSONObject(response);
 
-                    String body = jsonResponse.getString("body");
-                    JSONObject bodyJson = new JSONObject(body);
-
-                    boolean success = bodyJson.getBoolean("success");
+                    boolean success = jsonResponse.getBoolean("success");
 
                     if (success) {
                         // 성공한 경우 S3 경로 저장
-                        JSONObject dataJson = bodyJson.getJSONObject("data");
+                        JSONObject dataJson = jsonResponse.getJSONObject("data");
 
                         String s3Location = dataJson.getString("s3Location");
 
@@ -104,12 +100,11 @@ public class LambdaCrawlingTasklet implements Tasklet {
         return RepeatStatus.FINISHED;
     }
 
-    private String createPayload(final LocalDate syncDate, final String jobName) {
+    private String createPayload(LocalDate targetDate, String jobName) {
         // 크롤링 대상 정보를 Lambda 함수에 전달할 JSON 생성
         JSONObject payload = new JSONObject();
-        payload.put("queryStringParameters", new JSONObject()
-                .put("syncDate", syncDate.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-                .put("jobName", jobName));
+        payload.put("targetDate", targetDate.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .put("jobName", jobName);
 
         return payload.toString();
     }
