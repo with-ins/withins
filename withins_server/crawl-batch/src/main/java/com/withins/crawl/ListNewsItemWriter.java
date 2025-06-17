@@ -12,11 +12,9 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class ListNewsItemWriter implements ItemWriter<List<News>> {
-    private final EntityManagerFactory entityManagerFactory;
     private final JpaItemWriter<News> jpaItemWriter;
 
     public ListNewsItemWriter(EntityManagerFactory entityManagerFactory) {
-        this.entityManagerFactory = entityManagerFactory;
         this.jpaItemWriter = new JpaItemWriterBuilder<News>()
                 .entityManagerFactory(entityManagerFactory)
                 .usePersist(true)
@@ -24,7 +22,7 @@ public class ListNewsItemWriter implements ItemWriter<List<News>> {
     }
 
     @Override
-    public void write(Chunk<? extends List<News>> chunk) throws Exception {
+    public void write(Chunk<? extends List<News>> chunk) {
         for (List<News> newsList : chunk.getItems()) {
             jpaItemWriter.write(new Chunk<>(newsList));
         }

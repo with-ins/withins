@@ -1,5 +1,7 @@
 package com.withins.crawl;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.AbstractResource;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -9,20 +11,22 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import java.io.IOException;
 import java.io.InputStream;
 
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class S3Resource extends AbstractResource {
     private final String bucketName;
     private final String objectKey;
     private final S3Client s3Client;
 
-    public S3Resource(String s3Path) {
-        // s3Path 형식: s3://bucket-name/object-key
-        // 예: s3://crawl-json-bucket/crawling-results/2025-06-13/오정노인복지관/2025-06-15-17-20-12.json
+    public static S3Resource from(String s3Path, S3Client s3Client) {
+        // path 형식 - "s3://crawl-json-bucket/crawling-results/2025-06-13/오정노인복지관/2025-06-15-17-20-12.json"
         String path = s3Path.substring(5); // "s3://" 제거
         int slashIndex = path.indexOf('/');
 
-        this.bucketName = path.substring(0, slashIndex);
-        this.objectKey = path.substring(slashIndex + 1);
-        this.s3Client = S3Client.builder().build();
+        return new S3Resource(
+                path.substring(0, slashIndex),
+                path.substring(slashIndex + 1),
+                s3Client
+        );
     }
 
     @Override
@@ -31,17 +35,12 @@ public class S3Resource extends AbstractResource {
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
+    public InputStream getInputStream() {
         GetObjectRequest request = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(objectKey)
                 .build();
 
-        try {
-            ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(request);
-            return s3Object;
-        } catch (Exception e) {
-            throw new IOException("Failed to get S3 object", e);
-        }
+        return s3Client.getObject(request);
     }
 }

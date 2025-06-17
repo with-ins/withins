@@ -10,12 +10,12 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Slf4j
@@ -26,52 +26,62 @@ public class CrawlJobScheduler {
 
     private final JobLauncher jobLauncher;
     
-    @Qualifier("crawlingJob")
-    private final Job crawlingJob;
+    private final Job allCentersNewsCrawlJob;
 
     /**
-     * 매일 오전 9시에 크롤링 작업 실행
+     * 매일 오전 3시에 크롤링 작업 실행
      * cron = "초 분 시 일 월 요일"
      */
-    @Scheduled(cron = "0 0 9 * * ?")
+    @Scheduled(cron = "0 0 3 * * ?")
     public void runDailyCrawlingJob() {
-        log.info("Starting scheduled crawling job");
+        LocalDateTime startTime = LocalDateTime.now();
+        log.info("News 크롤링 스케쥴러 시작 - 현재시간={}", startTime.format(DateTimeFormatter.ISO_DATE_TIME));
+
+        String yesterday = LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_DATE);
         
-        // 현재 날짜를 문자열로 변환
-        String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
-        
-        // 고유한 JobParameters 생성 (매번 다른 타임스탬프 사용)
         JobParameters jobParameters = new JobParametersBuilder()
-                .addString("targetDate", today)
+                .addString("targetDate", yesterday)
+                .addLong("timestamp", System.currentTimeMillis())
                 .toJobParameters();
         
         try {
-            jobLauncher.run(crawlingJob, jobParameters);
-            log.info("Scheduled crawling job completed successfully");
+            jobLauncher.run(allCentersNewsCrawlJob, jobParameters);
+            LocalDateTime endTime = LocalDateTime.now();
+
+            log.info("News 크롤링 스케쥴러 종료 - 시작시간={}, 종료시간={}, 소요시간={}초",
+                    startTime.format(DateTimeFormatter.ISO_DATE_TIME),
+                    endTime.format(DateTimeFormatter.ISO_DATE_TIME),
+                    endTime.minusSeconds(startTime.getSecond()).getSecond());
         } catch (JobExecutionAlreadyRunningException | JobRestartException |
                  JobInstanceAlreadyCompleteException | JobParametersInvalidException e) {
-            log.error("Error executing scheduled crawling job", e);
+            log.warn("News 크롤링 스케쥴러 실패 - {}", e.getMessage());
         }
     }
-    
-    /**
-     * 테스트용: 매 시간마다 크롤링 작업 실행 (개발 환경에서만 활성화)
-     */
-    @Scheduled(fixedRate = 1800000) // 30분마다 실행 (첫 실행은 애플리케이션 시작 직후)
-    public void runHourlyCrawlingJobForTesting() {
-        log.info("Starting hourly test crawling job");
-        
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addString("targetDate", LocalDate.now().format(DateTimeFormatter.ISO_DATE))
-                .addLong("timestamp", System.currentTimeMillis())  // 타임스탬프 추가
-                .toJobParameters();
-        
-        try {
-            jobLauncher.run(crawlingJob, jobParameters);
-            log.info("Hourly test crawling job completed successfully");
-        } catch (JobExecutionAlreadyRunningException | JobRestartException |
-                 JobInstanceAlreadyCompleteException | JobParametersInvalidException e) {
-            log.error("Error executing hourly test crawling job", e);
-        }
-    }
+
+    // 테스트용
+//    @Scheduled(fixedRate = 1800000) // 30분마다 실행 (첫 실행은 애플리케이션 시작 직후)
+//    public void runDailyCrawlingJobTest() {
+//        LocalDateTime startTime = LocalDateTime.now();
+//        log.info("News 크롤링 스케쥴러 시작 - 현재시간={}", startTime.format(DateTimeFormatter.ISO_DATE_TIME));
+//
+//        String yesterday = LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_DATE);
+//
+//        JobParameters jobParameters = new JobParametersBuilder()
+//                .addString("targetDate", yesterday)
+//                .addLong("timestamp", System.currentTimeMillis())
+//                .toJobParameters();
+//
+//        try {
+//            jobLauncher.run(allCentersNewsCrawlJob, jobParameters);
+//            LocalDateTime endTime = LocalDateTime.now();
+//
+//            log.info("News 크롤링 스케쥴러 종료 - 시작시간={}, 종료시간={}, 소요시간={}초",
+//                    startTime.format(DateTimeFormatter.ISO_DATE_TIME),
+//                    endTime.format(DateTimeFormatter.ISO_DATE_TIME),
+//                    endTime.minusSeconds(startTime.getSecond()).getSecond());
+//        } catch (JobExecutionAlreadyRunningException | JobRestartException |
+//                 JobInstanceAlreadyCompleteException | JobParametersInvalidException e) {
+//            log.warn("News 크롤링 스케쥴러 실패 - {}", e.getMessage());
+//        }
+//    }
 }
