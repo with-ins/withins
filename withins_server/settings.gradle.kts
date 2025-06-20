@@ -4,7 +4,8 @@ include(
     "api",
     "core",
     "support:monitoring",
-    "support:logging"
+    "support:logging",
+    "crawl-batch"
 )
 
 pluginManagement {
