@@ -2,9 +2,6 @@ name: dev-nginx-with-ecs
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - dev
 
 env:
   ECR_NGINX_REPO_NAME: dev/nginx
