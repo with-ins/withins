@@ -46,16 +46,16 @@ jobs:
           docker push $IMAGE_URI
           echo "nginx_image=$IMAGE_URI" >> $GITHUB_OUTPUT
 
-#      - name: Replace image placeholders using sed
-#        run: |
-#          sed -e "s|<WAS_IMAGE_PLACEHOLDER>|${{ steps.build-nginx.outputs.nginx_image }}|" \
-#              ${{ env.TASK_TEMPLATE_PATH }} > ${{ env.TASK_DEFINITION_OUTPUT_PATH }}
-#
-#      - name: Deploy Amazon ECS task definition to ECS service
-#        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-#        with:
-#          task-definition: ${{ env.TASK_DEFINITION_OUTPUT_PATH }}
-#          service: ${{ env.ECS_SERVICE_NAME }}
-#          cluster: ${{ env.ECS_CLUSTER_NAME }}
-#          wait-for-service-stability: true
-#          force-new-deployment: true
+      - name: Replace image placeholders using sed
+        run: |
+          sed -e "s|<WAS_IMAGE_PLACEHOLDER>|${{ steps.build-nginx.outputs.nginx_image }}|" \
+              ${{ env.TASK_TEMPLATE_PATH }} > ${{ env.TASK_DEFINITION_OUTPUT_PATH }}
+
+      - name: Deploy Amazon ECS task definition to ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ env.TASK_DEFINITION_OUTPUT_PATH }}
+          service: ${{ env.ECS_SERVICE_NAME }}
+          cluster: ${{ env.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true # 서비스 안정성 확보 후 워크플로우 종료
+          force-new-deployment: true # 동일 태스크 정의라도 강제 재배포
