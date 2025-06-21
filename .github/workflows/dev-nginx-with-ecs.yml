@@ -48,7 +48,7 @@ jobs:
 
       - name: Replace image placeholders using sed
         run: |
-          sed -e "s|<WAS_IMAGE_PLACEHOLDER>|${{ steps.build-nginx.outputs.nginx_image }}|" \
+          sed -e "s|<NGINX_IMAGE_PLACEHOLDER>|${{ steps.build-nginx.outputs.nginx_image }}|" \
               ${{ env.TASK_TEMPLATE_PATH }} > ${{ env.TASK_DEFINITION_OUTPUT_PATH }}
 
       - name: Deploy Amazon ECS task definition to ECS service
