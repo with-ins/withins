@@ -1,0 +1,64 @@
+name: dev-nginx-with-ecs
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+env:
+  ECR_NGINX_REPO_NAME: dev/nginx
+  DOCKERFILE_NGINX_PATH: ./withins_server/config/dev/docker/Dockerfile.nginx
+  ECS_CLUSTER_NAME: unstage-cluster
+  ECS_SERVICE_NAME: nginx-service
+  TASK_DEFINITION_CONTAINER_NAME: nginx
+  TASK_TEMPLATE_PATH: ./withins_server/config/dev/task-definition/nginx-task-definition-dev.json
+  TASK_DEFINITION_OUTPUT_PATH: ./withins_server/config/dev/task-definition/rendered-nginx-task-definition.json
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          submodules: true
+          token: ${{ secrets.PRIVATE_REPO_ACCESS_TOKEN }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY_ID }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Nginx image
+        id: build-nginx
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ env.ECR_NGINX_REPO_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE_URI=$REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker build -t $IMAGE_URI -f $DOCKERFILE_NGINX_PATH .
+          docker push $IMAGE_URI
+          echo "nginx_image=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+#      - name: Replace image placeholders using sed
+#        run: |
+#          sed -e "s|<WAS_IMAGE_PLACEHOLDER>|${{ steps.build-nginx.outputs.nginx_image }}|" \
+#              ${{ env.TASK_TEMPLATE_PATH }} > ${{ env.TASK_DEFINITION_OUTPUT_PATH }}
+#
+#      - name: Deploy Amazon ECS task definition to ECS service
+#        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+#        with:
+#          task-definition: ${{ env.TASK_DEFINITION_OUTPUT_PATH }}
+#          service: ${{ env.ECS_SERVICE_NAME }}
+#          cluster: ${{ env.ECS_CLUSTER_NAME }}
+#          wait-for-service-stability: true
+#          force-new-deployment: true
