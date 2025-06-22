@@ -24,7 +24,7 @@ public class LambdaExecutionResult {
 
     public static LambdaExecutionResult from(InvokeResponse response) {
         int statusCode = response.statusCode();
-        String rawResponse = new String(response.payload().asByteArray(), StandardCharsets.UTF_8);
+        String rawResponse = response.payload().asUtf8String();
         JSONObject jsonObject = new JSONObject(rawResponse);
         LambdaResponseData responseData = LambdaResponseData.from(jsonObject);
 
