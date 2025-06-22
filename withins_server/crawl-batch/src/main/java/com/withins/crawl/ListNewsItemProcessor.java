@@ -65,12 +65,12 @@ public class ListNewsItemProcessor implements ItemProcessor<List<S3NewsFileDto>,
         return false;
     }
 
-    private WelfareCenter findWelfareCenter(final List<S3NewsFileDto> items) {
-        return welfareCenterReader.readBy(items.get(0).getWelfareCenterName())
+    private WelfareCenter findWelfareCenter(List<S3NewsFileDto> items) {
+        return welfareCenterReader.readBy(items.getFirst().getWelfareCenterName())
                 .orElseGet(
                         () -> {
                             log.warn("크롤링한 데이터의 WelfareCenterName과 DB에 저장된 WelfareCenter의 name이 불일치 - 크롤링한 데이터의 name={}",
-                                    items.get(0).getWelfareCenterName());
+                                    items.getFirst().getWelfareCenterName());
 
                             throw new EntityNotFoundException("WelfareCenter", items.get(0).getWelfareCenterName());
                         }
