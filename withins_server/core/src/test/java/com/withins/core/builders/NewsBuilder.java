@@ -1,32 +1,39 @@
 package com.withins.core.builders;
 
 import com.withins.core.news.entity.News;
-import com.withins.core.news.enums.KoreanRegion;
 import com.withins.core.news.enums.NewsType;
 import com.withins.core.welfarecenter.entity.WelfareCenter;
-import com.withins.core.welfarecenter.repository.WelfareCenterRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestComponent;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.With;
 
 import java.time.LocalDate;
 
-@TestComponent
+@With
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class NewsBuilder {
 
-    @Autowired
-    private WelfareCenterRepository welfareCenterRepository;
-    
-    public News with(String title, NewsType type, KoreanRegion region) {
-        return getDefaultBuilder().title(title).type(type)
-            .welfareCenter(welfareCenterRepository.save(getDefaultWelfareCenterBuilder().region(region).build()))
-            .build();
-    }
+	private Long id;
+	private String title = "테스트 제목";
+	private NewsType type = NewsType.NOTICE;
+	private String link = "https://example.com/example";
+	private WelfareCenter welfareCenter = null;
+	private LocalDate newsCreatedAt = LocalDate.now();
 
-    private News.NewsBuilder getDefaultBuilder() {
-        return News.builder().link("").newsCreatedAt(LocalDate.now());
-    }
+	public static NewsBuilder News() {
+		return new NewsBuilder();
+	}
 
-    private WelfareCenter.WelfareCenterBuilder getDefaultWelfareCenterBuilder() {
-        return WelfareCenter.builder().address("어딘가 어딘가").url("google.com").name("무슨무슨복지관").email("asdf@gmail.com");
-    }
+	public News build() {
+		return News.builder()
+				.id(this.id)
+				.title(this.title)
+				.type(this.type)
+				.link(this.link)
+				.welfareCenter(this.welfareCenter)
+				.newsCreatedAt(this.newsCreatedAt)
+				.build();
+	}
 }

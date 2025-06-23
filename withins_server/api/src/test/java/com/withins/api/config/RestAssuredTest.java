@@ -1,7 +1,7 @@
 package com.withins.api.config;
 
-import com.withins.core.testfixtures.DatabaseCleanup;
-import com.withins.core.testfixtures.TestContainer;
+import com.withins.core.testfixtures.support.DatabaseCleanup;
+import com.withins.core.testfixtures.support.TestContainer;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

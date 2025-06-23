@@ -1,8 +1,9 @@
 package com.withins.core.config;
 
-import com.withins.core.testfixtures.DatabaseCleanup;
-import com.withins.core.testfixtures.TestContainer;
-import org.junit.jupiter.api.AfterEach;
+import com.withins.core.testfixtures.support.DatabaseCleanup;
+import com.withins.core.testfixtures.support.SpringBootTestSupport;
+import com.withins.core.testfixtures.support.TestContainer;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,16 +15,20 @@ import org.springframework.test.context.ActiveProfiles;
 )
 @ActiveProfiles("test")
 public abstract class IntegrationTest extends TestContainer {
-    @Autowired
-    private DatabaseCleanup databaseCleanup;
-
-    @AfterEach
-    public void cleanup() {
-        databaseCleanup.execute();
-    }
 
     @EnableAutoConfiguration
     @ComponentScan(basePackages = {"com.withins.core"})
     static class CoreTestConfiguration {
     }
+
+    @Autowired
+    private DatabaseCleanup databaseCleanup;
+
+    @BeforeEach
+    public void cleanup() {
+        databaseCleanup.execute();
+    }
+
+    @Autowired
+    protected SpringBootTestSupport testSupport;
 }

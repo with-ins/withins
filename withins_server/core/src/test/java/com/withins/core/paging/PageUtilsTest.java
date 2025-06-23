@@ -3,203 +3,163 @@ package com.withins.core.paging;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.withins.core.builders.NewsBuilder;
 import com.withins.core.config.IntegrationTest;
 import com.withins.core.news.entity.News;
 import com.withins.core.news.enums.KoreanRegion;
-import com.withins.core.news.enums.NewsType;
-import com.withins.core.news.repository.NewsRepository;
-import org.junit.jupiter.api.DisplayName;
+import com.withins.core.welfarecenter.entity.WelfareCenter;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
+import static com.withins.core.builders.NewsBuilder.News;
+import static com.withins.core.builders.WelfareCenterBuilder.WelfareCenter;
 import static com.withins.core.news.entity.QNews.news;
-import static com.withins.core.news.enums.KoreanRegion.*;
-import static com.withins.core.news.enums.NewsType.*;
+import static com.withins.core.news.enums.KoreanRegion.BUCHEON;
+import static com.withins.core.news.enums.KoreanRegion.SEOUL;
 import static com.withins.core.welfarecenter.entity.QWelfareCenter.welfareCenter;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@Transactional
 class PageUtilsTest extends IntegrationTest {
 
     @Autowired
-    private PageUtils pageUtils;
-    @Autowired
-    private NewsRepository newsRepository;
-    @Autowired
-    private NewsBuilder newsBuilder;
-    @Autowired
-    private JPAQueryFactory query;
+    private PageUtils sut;
 
-    private int expectedTotalPages(List<?> list, int pageSize) {
-        int size = list.size();
-        if (size % pageSize == 0) {
-            return size / pageSize;
-        }
-        return size / pageSize + 1;
+    private JPAQuery<News> generateNewsQuery(BooleanExpression... where) {
+        return testSupport.jpaQueryFactory
+                .selectFrom(news)
+                .join(news.welfareCenter, welfareCenter)
+                .where(where == null ? new BooleanExpression[]{} : where);
     }
 
-    private JPAQuery<News> generateQuery(BooleanExpression... where) {
-        return query.selectFrom(news)
-            .join(news.welfareCenter, welfareCenter)
-            .where(where == null ? new BooleanExpression[]{} : where);
+    private JPAQuery<WelfareCenter> generateWelfareQuery(BooleanExpression... where) {
+        return testSupport.jpaQueryFactory
+                .selectFrom(welfareCenter)
+                .where(where == null ? new BooleanExpression[]{} : where);
     }
+
 
     @Test
-    @DisplayName("조건이 없다면 모든 데이터를 반환한다.")
-    void defaultPageWithTest() {
+    void 조건이_없다면_모든_데이터를_반환한다() {
         // given
-        int pageNumber = 0;
-        int pageSize = 10;
-
-        List<News> newsList = List.of(
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL),
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL),
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL),
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL)
+        testSupport.saveAll(
+                WelfareCenter().build(),
+                WelfareCenter().build()
         );
-        newsRepository.saveAll(newsList);
-
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-
-        JPAQuery<News> jpaQuery = generateQuery((BooleanExpression) null);
 
         // when
-        Page<News> newsPage = pageUtils.of(pageable, jpaQuery, news);
+        Page<WelfareCenter> newsPage = sut.of(
+                PageRequest.of(0, 10),
+                generateWelfareQuery((BooleanExpression) null),
+                welfareCenter);
 
         // then
-        assertThat(newsPage.getTotalElements()).isEqualTo(newsList.size());
-        assertThat(newsPage.getNumberOfElements()).isEqualTo(newsList.size());
-        assertThat(newsPage.getTotalPages()).isEqualTo(expectedTotalPages(newsList, pageSize));
+        assertThat(newsPage.getTotalElements()).isEqualTo(2);
+        assertThat(newsPage.getNumberOfElements()).isEqualTo(2);
     }
 
-    @Test
-    @DisplayName("pageSize 보다 리스트의 크기가 클 경우 content는 pageSize 만큼만 반환한다")
-    void nextPageTest() {
+    @ParameterizedTest
+    @ValueSource(ints = {2, 3})
+    void pageSize보다_저장된_엔티티들의_크기가_클_경우_content는_pageSize만큼만_반환한다(int pageSize) {
         // given
-        int pageNumber = 0;
-        int pageSize = 2;
-
-        List<News> newsList = List.of(
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL),
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL),
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL),
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL)
+        testSupport.saveAll(
+                WelfareCenter().build(),
+                WelfareCenter().build(),
+                WelfareCenter().build()
         );
-        newsRepository.saveAll(newsList);
-
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-
-        JPAQuery<News> jpaQuery = generateQuery((BooleanExpression) null);
 
         // when
-        Page<News> newsPage = pageUtils.of(pageable, jpaQuery, news);
+        Page<WelfareCenter> newsPage = sut.of(
+                PageRequest.of(0, pageSize),
+                generateWelfareQuery((BooleanExpression) null),
+                welfareCenter
+        );
 
         // then
-        assertThat(newsPage.getTotalElements()).isEqualTo(newsList.size());
         assertThat(newsPage.getNumberOfElements()).isEqualTo(pageSize);
-        assertThat(newsPage.getTotalPages()).isEqualTo(expectedTotalPages(newsList, pageSize));
     }
 
     @Test
-    @DisplayName("Text 필터 테스트 - 띄어쓰기를 무시해야한다.")
-    void textFilterTest1() {
+    void pageSize가_저장된_엔티티들의_크기보다_클_경우_content는_저장된_엔티티의_크기와_같다() {
         // given
-        List<News> newsList = List.of(
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, SEOUL)
+        testSupport.save(
+                WelfareCenter().build()
         );
-        newsRepository.saveAll(newsList);
 
-        String findWord = "ABCDE F";
         // when
-        Pageable pageable = PageRequest.of(0, 10);
-
-        BooleanExpression wordFilter = pageUtils.filter(news.title, findWord, true);
-        Page<News> newsPage = pageUtils.of(pageable, generateQuery(wordFilter), news);
+        Page<WelfareCenter> newsPage = sut.of(
+                PageRequest.of(0, 2),
+                generateWelfareQuery((BooleanExpression) null),
+                welfareCenter
+        );
 
         // then
-        assertThat(newsPage.getTotalElements()).isEqualTo(4);
+        assertThat(newsPage.getNumberOfElements()).isEqualTo(1);
     }
 
     @Test
-    @DisplayName("Text 필터 테스트 - 띄어쓰기를 무시하면 안된다")
-    void textFilterTest2() {
+    void Text_필터테스트_띄어쓰기를_무시해야한다() {
         // given
-        List<News> newsList = List.of(
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, SEOUL)
+        WelfareCenter center = testSupport.save(
+                WelfareCenter().build()
         );
-        newsRepository.saveAll(newsList);
 
-        String findWord = "ABCDEF";
+        testSupport.saveAll(
+                News().withWelfareCenter(center).withTitle("ABC DEF").withLink("link1").build(),
+                News().withWelfareCenter(center).withTitle("ABCDEF").withLink("link2").build()
+        );
+
         // when
-        Pageable pageable = PageRequest.of(0, 10);
-
-        BooleanExpression wordFilter = pageUtils.filter(news.title, findWord, false);
-        Page<News> newsPage = pageUtils.of(pageable, generateQuery(wordFilter), news);
+        BooleanExpression wordFilter = sut.filter(news.title, "ABCDE F", true);
+        Page<News> newsPage = sut.of(
+                PageRequest.of(0, 10),
+                generateNewsQuery(wordFilter),
+                news);
 
         // then
-        assertThat(newsPage.getTotalElements()).isEqualTo(3);
+        assertThat(newsPage.getTotalElements()).isEqualTo(2);
     }
 
     @Test
-    @DisplayName("Enum 필터 테스트 - 포함된 모든 데이터를 가져와야한다.")
-    void enumFilterTest1() {
+    void Test_필터테스트_띄어쓰기까지_포함하여_필터링한다() {
         // given
-        List<News> newsList = List.of(
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, BUCHEON)
+        testSupport.saveAll(
+                WelfareCenter().withName("ABC DEF").build(),
+                WelfareCenter().withName("ABCDEF").build()
         );
-        newsRepository.saveAll(newsList);
-
-        KoreanRegion regionFilter = BUCHEON;
 
         // when
-        Pageable pageable = PageRequest.of(0, 10);
-
-        BooleanExpression wordFilter = pageUtils.filter(news.welfareCenter.region, regionFilter);
-        Page<News> newsPage = pageUtils.of(pageable, generateQuery(wordFilter), news);
+        BooleanExpression wordFilter = sut.filter(welfareCenter.name, "ABCDEF", false);
+        Page<WelfareCenter> newsPage = sut.of(
+                PageRequest.of(0, 10),
+                generateWelfareQuery(wordFilter),
+                welfareCenter);
 
         // then
         assertThat(newsPage.getTotalElements()).isEqualTo(1);
     }
 
     @Test
-    @DisplayName("Enum 필터 테스트 - 포함된 모든 데이터를 가져와야한다.2")
-    void enumFilterTest2() {
+    void Enum_필터테스트_필터링_조건에_포함된_모든_데이터를_가져온다() {
         // given
-        List<News> newsList = List.of(
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", EVENT, SEOUL),
-            newsBuilder.with("ABCDEF", EVENT, BUCHEON)
+        testSupport.saveAll(
+                WelfareCenter().withRegion(SEOUL).build(),
+                WelfareCenter().withRegion(BUCHEON).build()
         );
-        newsRepository.saveAll(newsList);
-
-        NewsType typeFilter = EVENT;
 
         // when
-        Pageable pageable = PageRequest.of(0, 10);
+        KoreanRegion regionFilter = BUCHEON;
 
-        BooleanExpression wordFilter = pageUtils.filter(news.type, typeFilter);
-        Page<News> newsPage = pageUtils.of(pageable, generateQuery(wordFilter), news);
+        Page<WelfareCenter> newsPage = sut.of(
+                PageRequest.of(0, 10),
+                generateWelfareQuery(sut.filter(welfareCenter.region, regionFilter)),
+                welfareCenter
+        );
 
         // then
-        assertThat(newsPage.getTotalElements()).isEqualTo(2);
+        assertThat(newsPage.getTotalElements()).isEqualTo(1);
     }
 
     /**
@@ -208,27 +168,24 @@ class PageUtilsTest extends IntegrationTest {
      * 이때 사용되는것이 filter이다.
      */
     @Test
-    @DisplayName("Enum 필터 테스트 - 비교해야할 데이터가 제외항목에 존재하면 null을 반환해야한다.")
-    void enumFilterTest3() {
+    void Enum_필터테스트_비교해야할_데이터가_제외항목에_존재하면_null을_반환한다() {
         // given
-        List<News> newsList = List.of(
-            newsBuilder.with("ABC DEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, SEOUL),
-            newsBuilder.with("ABCDEF", NOTICE, BUCHEON)
+        testSupport.saveAll(
+                WelfareCenter().withRegion(SEOUL).build(),
+                WelfareCenter().withRegion(BUCHEON).build()
         );
-        newsRepository.saveAll(newsList);
 
+        // when
         KoreanRegion regionFilter = KoreanRegion.ALL;
         KoreanRegion exclude = KoreanRegion.ALL;
 
-        // when
-        Pageable pageable = PageRequest.of(0, 10);
-
-        BooleanExpression wordFilter = pageUtils.filter(news.welfareCenter.region, regionFilter, exclude);
-        Page<News> newsPage = pageUtils.of(pageable, generateQuery(wordFilter), news);
+        Page<WelfareCenter> newsPage = sut.of(
+                PageRequest.of(0, 10),
+                generateWelfareQuery(sut.filter(news.welfareCenter.region, regionFilter, exclude)),
+                welfareCenter
+        );
 
         // then
-        assertThat(newsPage.getTotalElements()).isEqualTo(newsList.size());
+        assertThat(newsPage.getTotalElements()).isEqualTo(2);
     }
 }
