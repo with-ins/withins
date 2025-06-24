@@ -5,11 +5,12 @@ on:
 
 env:
   ECR_REPOSITORY_NAME: unstage/prometheus
-  DOCKERFILE_PROMETHEUS_PATH: ./unstage-config/ec2/Dockerfile.prometheus
+  DOCKERFILE_PROMETHEUS_PATH: ./withins_server/config/dev/docker/Dockerfile.prometheus
   ECS_CLUSTER_NAME: unstage-cluster
   ECS_SERVICE_NAME: unstage-ecs-monitoring-service
-  TASK_DEFINITION_PATH: ./unstage-config/ecs/prometheus-grafana-task-definition.json
+  TASK_DEFINITION_PATH: ./withins_server/config/dev/task-definition/prometheus-grafana-task-definition.json
   TASK_DEFINITION_CONTAINER_NAME: prometheus
+
 
 jobs:
   build:
