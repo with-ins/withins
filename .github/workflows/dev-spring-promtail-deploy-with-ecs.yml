@@ -2,9 +2,9 @@ name: dev-spring-promtail-deploy-with-ecs
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - dev
+#  push:
+#    branches:
+#      - dev
 
 env:
   ECR_WAS_REPO_NAME: dev/spring
