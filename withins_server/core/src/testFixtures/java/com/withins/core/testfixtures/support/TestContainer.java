@@ -1,4 +1,4 @@
-package com.withins.core.testfixtures;
+package com.withins.core.testfixtures.support;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;

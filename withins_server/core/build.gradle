@@ -12,6 +12,10 @@ dependencies {
     testFixturesImplementation("org.testcontainers:testcontainers:${project.property('testContainerVersion')}")
     testFixturesImplementation("org.testcontainers:junit-jupiter:${project.property('testContainerVersion')}")
     testFixturesImplementation("org.testcontainers:mysql:${project.property('testContainerMySqlVersion')}")
+    testFixturesImplementation("com.querydsl:querydsl-jpa:${project.property('querydslVersion')}:jakarta")
+    testFixturesImplementation("com.querydsl:querydsl-apt:${project.property('querydslVersion')}:jakarta")
+    testFixturesImplementation("jakarta.annotation:jakarta.annotation-api")
+    testFixturesImplementation("jakarta.persistence:jakarta.persistence-api")
 }
 
 def querydslDir = "$buildDir/generated/sources/annotationProcessor/java/main"

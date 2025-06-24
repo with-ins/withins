@@ -1,4 +1,4 @@
-package com.withins.core.testfixtures;
+package com.withins.core.testfixtures.support;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;

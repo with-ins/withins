@@ -27,7 +27,7 @@ public class News extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private NewsType type;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String link;
 
     @ManyToOne(fetch = FetchType.LAZY)
