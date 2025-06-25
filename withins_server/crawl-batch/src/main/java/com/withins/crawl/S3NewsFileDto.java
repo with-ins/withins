@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -15,7 +15,7 @@ public class S3NewsFileDto {
     @JsonProperty("category")
     private String type;
     @JsonProperty("createdAt")
-    private LocalDateTime newsCreatedAt;
+    private OffsetDateTime newsCreatedAt;
     private String link;
     @JsonProperty("institutionName")
     private String welfareCenterName;

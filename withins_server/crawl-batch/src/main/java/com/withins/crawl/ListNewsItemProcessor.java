@@ -53,6 +53,7 @@ public class ListNewsItemProcessor implements ItemProcessor<List<S3NewsFileDto>,
                 .type(NewsType.valueOf(item.getType()))
                 .link(item.getLink())
                 .welfareCenter(welfareCenter)
+                .newsCreatedAt(item.getNewsCreatedAt().toLocalDate())
                 .build();
     }
 
