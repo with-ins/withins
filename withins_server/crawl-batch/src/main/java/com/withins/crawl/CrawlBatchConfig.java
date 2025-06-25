@@ -2,6 +2,7 @@ package com.withins.crawl;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.withins.core.news.component.NewsReader;
 import com.withins.core.news.entity.News;
 import com.withins.core.welfarecenter.component.WelfareCenterReader;
@@ -84,7 +85,8 @@ public class CrawlBatchConfig {
     public S3NewsFileItemReader s3NewsFileItemReader(
             @Value("#{jobExecutionContext['successfulS3Paths']}") List<String> s3Paths) {
         ObjectMapper objectMapper = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .registerModule(new JavaTimeModule());
 
         if(CollectionUtils.isEmpty(s3Paths)) {
             return new S3NewsFileItemReader(null, objectMapper);

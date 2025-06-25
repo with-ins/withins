@@ -15,6 +15,7 @@ dependencies {
     //TODO org.json:json 라이브러리는 jackson 라이브러리로 대체 예정
     implementation("org.json:json:20230618")
     implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}")
 
     testImplementation(testFixtures(project(":core")))
     testImplementation("org.springframework.batch:spring-batch-test")
