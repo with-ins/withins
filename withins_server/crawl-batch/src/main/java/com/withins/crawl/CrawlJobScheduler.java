@@ -32,7 +32,7 @@ public class CrawlJobScheduler {
      * 매일 오전 3시에 크롤링 작업 실행
      * cron = "초 분 시 일 월 요일"
      */
-    @Scheduled(cron = "0 0 3 * * ?")
+    @Scheduled(cron = "0 0 16 * * ?", zone = "Asia/Seoul")
     public void runDailyCrawlingJob() {
         LocalDateTime startTime = LocalDateTime.now();
         log.info("News 크롤링 스케쥴러 시작 - 현재시간={}", startTime.format(DateTimeFormatter.ISO_DATE_TIME));
