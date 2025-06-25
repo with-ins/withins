@@ -29,11 +29,11 @@ public class CrawlJobScheduler {
     private final Job allCentersNewsCrawlJob;
 
     /**
-     * 매일 오후 17시 35분에 크롤링 작업 실행
+     * 매일 오후 18시 20분에 크롤링 작업 실행
      * cron = "초 분 시 일 월 요일"
      */
     //TODO 현재 크롤링 시간은 테스트용이다. 실제 동작 시간은 나중에 결정한다.
-    @Scheduled(cron = "0 35 17 * * ?", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 20 18 * * ?", zone = "Asia/Seoul")
     public void runDailyCrawlingJob() {
         LocalDateTime startTime = LocalDateTime.now();
         log.info("News 크롤링 스케쥴러 시작 - 현재시간={}", startTime.format(DateTimeFormatter.ISO_DATE_TIME));
