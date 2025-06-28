@@ -7,6 +7,41 @@
         type="dots"
       />
 
+      <form @submit.prevent="submit">
+        <div class="form-wrap">
+          <div class="field_wrap">
+            <div class="field_inner">
+              <label for="username">
+                <input class="field"
+                       ref="usernameInput"
+                       v-model="username"
+                       autofocus
+                       tabindex="0"
+                       placeholder="아이디"
+                       autocomplete="off"
+                       id="username" name="username" type="text">
+              </label>
+            </div>
+            <div class="field_inner">
+              <label for="password">
+                <input class="field"
+                       ref="passwordInput"
+                       v-model="password"
+                       tabindex="0"
+                       placeholder="비밀번호"
+                       autocomplete="off"
+                       id="password" name="password" type="password">
+              </label>
+            </div>
+          </div>
+          <button type="submit" id="submit" :disabled="formDisabled">로그인</button>
+        </div>
+        <div class="form-menu">
+          <RouterLink to="/find">아이디/비밀번호 찾기</RouterLink>
+          <RouterLink to="/signup">회원가입</RouterLink>
+        </div>
+      </form>
+
       <div id="form">
         <a href="/oauth2/authorization/kakao" id="kakao-btn" class="social-btn">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -2,7 +2,7 @@ package com.withins.core.user.service;
 
 import com.withins.core.user.component.UserReader;
 import com.withins.core.user.dto.UserAuthToken;
-import com.withins.core.user.entity.OrgUser;
+import com.withins.core.user.entity.FormUser;
 import com.withins.core.user.entity.SocialUser;
 import com.withins.core.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class AuthService {
 
     private String getProvider(User user) {
         return switch (user) {
-            case OrgUser orgUser -> "LOCAL";
+            case FormUser formUser -> "LOCAL";
             case SocialUser socialUser -> socialUser.getProvider().name();
             default -> throw new IllegalStateException("Unexpected value: " + user);
         };

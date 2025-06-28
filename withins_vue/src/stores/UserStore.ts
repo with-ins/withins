@@ -36,16 +36,12 @@ export const useUserStore = defineStore('user', () => {
     }
 
     const loadUserData = async () => {
-        await userApi.loadUser()
-            .then(res => {
-                if (res.status === 200) {
-                    let data = res.data;
-                    user.value = new User(data);
-                }
-            })
-            .catch(err => {
-                user.value = null;
-            });
+        const fetchResponse = await userApi.loadUser();
+        if (fetchResponse.status == 200) {
+            user.value = new User(fetchResponse.data);
+        } else {
+            user.value = null;
+        }
     }
 
     const isAnonymous = computed((): boolean => user.value == null);

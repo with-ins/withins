@@ -1,6 +1,6 @@
 package com.withins.api.auth.auth2;
 
-import com.withins.core.user.entity.OrgUser;
+import com.withins.core.user.entity.FormUser;
 import com.withins.core.user.entity.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,7 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
     @Override
     public String getPassword() {
         return switch (user) {
-            case OrgUser orgUser -> orgUser.getPassword();
+            case FormUser formUser -> formUser.getPassword();
             default ->  null;
         };
     }

@@ -1,4 +1,5 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios";
+import axios, {AxiosError, AxiosRequestConfig} from "axios";
+import {FetchResponse} from "@/api/FetchResponse";
 
 export class ApiClient {
   private isRefreshing = false;
@@ -118,7 +119,7 @@ export class ApiClient {
 
   private async refreshToken(): Promise<boolean> {
     try {
-      const response = await axios.post('/api/v1/auth/refresh');
+      const response = await post('/api/v1/auth/refresh');
       if (response.status === 200) {
         console.log('Token refreshed successfully');
         return true;
@@ -133,7 +134,6 @@ export class ApiClient {
 
 const apiClient = new ApiClient();
 export { apiClient };
-export default axios;
 
 export const authApi = {
   formLogin: async (username: string, password: string) => {
@@ -150,20 +150,135 @@ export const authApi = {
       console.warn('Logout request failed:', error);
       throw error;
     }
-  }
+  },
 }
 
 export const userApi = {
-  loadUser: async () => {
-    return await axios.get('/api/v1/auth/user');
+  loadUser: async () : Promise<FetchResponse> => {
+    return await get('/api/v1/auth/user');
   }
 }
 
 export const newsApi = {
-  news: async (apiParams: any) => {
-    const response = await axios.get('/api/v1/news', {
+  news: async (apiParams: any) : Promise<FetchResponse> => {
+    return await get('/api/v1/news', {
       params: apiParams
     });
-    return response.data;
   }
 }
+
+export const signupApi = {
+  existsUsername: async (username: string): Promise<boolean | null> => {
+    const response = await get('http://localhost:8080/api/v1/signup/exists/username', {
+      params: {username: username}
+    });
+    if (response.status === 200) {
+      return response.data;
+    }
+    return null;
+  },
+  existsEmail: async (email: string): Promise<boolean | null> => {
+    const response = await get('http://localhost:8080/api/v1/signup/exists/email', {
+      params: {email: email}
+    });
+    return response.status === 200 ? response.data : null;
+  },
+  signup: async (username: string, password: string, email: string) : Promise<FetchResponse> => {
+    return await post('http://localhost:8080/api/v1/signup', {
+      username, password, email
+    });
+  }
+}
+const get = async <D = any> (url: string, data?: AxiosRequestConfig<D>) : Promise<FetchResponse> => {
+  try {
+    const response = await axios.get(url, data);
+    return new FetchResponse(
+        response.status,
+        'SUCCESS',
+        response.data
+    );
+  } catch (error: any) {
+    const status : number = Number(error.response?.status) ?? 500;
+    console.error(messageType[status]);
+    return new FetchResponse(
+        status,
+        error.response.message,
+        error.response.data,
+    );
+  }
+}
+
+const post = async <D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>) : Promise<FetchResponse> => {
+  try {
+    const response = await axios.post(url, data, config);
+    return new FetchResponse(
+        response.status,
+        'SUCCESS',
+        response.data
+    );
+  } catch (error: any) {
+    const status : number = Number(error.response?.status) ?? 500;
+    console.error(messageType[status]);
+    return new FetchResponse(
+        status,
+        error.response.message,
+        error.response.data,
+    );
+  }
+}
+
+const messageType : Record<number, string> = {
+  100: 'CONTINUE',
+  101: 'SWITCHING_PROTOCOL',
+  102: 'PROCESSING',
+  103: 'EARLY_HINTS',
+  200: 'OK',
+  201: 'CREATED',
+  202: 'ACCEPTED',
+  203: 'NONAUTHORITATIVE_INFOMATION',
+  204: 'NO_CONTENT',
+  205: 'RESET_CONTENT',
+  206: 'PARTIAL_CONTENT',
+  207: 'MULTI_STATUS',
+  208: 'MULTI_STATUS',
+  226: 'IM_USED',
+  300: 'MULTIPLE_CHOICE',
+  301: 'MOVED_PERMANENTLY',
+  302: 'FOUND',
+  303: 'SEE_OTHER',
+  304: 'NOT_MODIFIED',
+  305: 'USE_PROXY',
+  306: 'UNUSED',
+  307: 'TEMPORARY_REDIRECT',
+  308: 'PERMANENT_REDIRECT',
+  400: 'BAD_REQUEST',
+  401: 'UNAUTHORIZED',
+  402: 'PAYMENT_REQUIRED',
+  403: 'FORBIDDEN',
+  404: 'NOT_FOUND',
+  405: 'NOT_ACCEPTABLE',
+  407: 'PROXY_AUTHENTICATION_REQUIRED',
+  408: 'REQUEST_TIMEOUT',
+  409: 'CONFLICT',
+  410: 'GONE',
+  411: 'LENGTH_REQUIRED',
+  412: 'PRECONDITION_FAILED',
+  413: 'PAYLOAD_TOO_LARGE',
+  414: 'URI_TOO_LONG',
+  415: 'UNSUPPORTED_MEDIA_TYPE',
+  416: 'REQUESTED_RANGE_NOT_SATISFIABLE',
+  417: 'EXPECTATION_FAILED',
+  418: 'I\'M_A_TEAPOT',
+  421: 'MISDIRECTED_REQUEST',
+  422: 'UNPROCESSABLE_ENTITY',
+  423: 'LOCKED',
+  424: 'FAILED_DEPENDENCY',
+  426: 'UPGRADE_REQUIRED',
+  428: 'PRECONDITION_REQUIRED',
+  429: 'TOO_MANY_REQUESTS',
+  431: 'REQUEST_HEADER_FIELDS_TOO_LARGE',
+  451: 'UNAVAILABLE_FOR_LEGAL_REASONS',
+  500: 'SERVER_ERROR',
+}
+
+

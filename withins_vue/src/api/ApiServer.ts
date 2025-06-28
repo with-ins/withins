@@ -2,45 +2,7 @@ import {Pageable} from "@/domain/Pageable";
 import {Recruit} from "@/domain/Recruit";
 import {RecruitDetail} from "@/domain/RecruitDetail";
 import {Career} from "@/domain/Career";
-import {News} from "@/domain/News";
 export class ApiServer {
-
-  static server : String = 'http://localhost:8080/api/v1';
-
-  static fetchPost(url : String, json : Object) {
-    return fetch(`${ApiServer.server}${url}` , {
-      method : 'post',
-      credentials: 'include',
-      headers : {'Content-Type' : 'application/json'},
-      body : JSON.stringify(json)
-    })
-      .then(res => res.json())
-  }
-
-  static async fetchGet(url : String, params: object) {
-    const requestUrl = `${ApiServer.server}${url}${this.toQueryParams(params)}`;
-
-    try {
-      const response = await fetch(requestUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json'
-        },
-        credentials: 'include'
-      });
-
-      // 텍스트가 유효한 JSON인지 확인 후 파싱
-      try {
-        return response.json();
-      } catch (parseError) {
-        console.error('JSON 파싱 오류:', parseError);
-        throw new Error('응답이 유효한 JSON 형식이 아닙니다');
-      }
-    } catch (error) {
-      console.error('API 호출 중 오류 발생:', error);
-      throw error;
-    }
-  }
 
   static mockRecruit(url : String) : Pageable<Recruit> {
     const json = {
@@ -167,66 +129,9 @@ export class ApiServer {
       ]
     };
 
-    const pageable = new Pageable<Recruit>(json);
+    const pageable : Pageable<Recruit> = Pageable.of(json);
     let recruits : Array<Recruit> = json.content.map(value => new Recruit(value));
     pageable.setContent(recruits)
-    return pageable;
-  }
-  static mockNews(url: String, params: object) : Pageable<News> {
-    const json = {
-      'page' : {
-        'totalElements': 71,
-        'totalPages': 8,
-        'pageNumber': 0,
-      },
-      'condition' : {
-        'word': '테스트',
-        'region': 'all',
-        'type': 'ALL',
-      },
-      'content': [
-        {
-          'newsId': 1,
-          'title': '2025년 사회교육프로그램 강사모집 [웰빙댄스]',
-          'type' : 'NOTICE',
-          'link' : 'https://naver.com',
-          'organization': {
-            'organizationId': 1,
-            'name' : '서초구립양재노인종합복지관',
-            'region': '인천 남동구'
-          },
-          'createAt': '2025-01-01T00:00:00',
-        },
-        {
-          'newsId': 1,
-          'title': '2025년 사회교육프로그램 강사모집 [웰빙댄스]',
-          'type' : 'NOTICE',
-          'link' : 'https://naver.com',
-          'organization': {
-            'organizationId': 1,
-            'name' : '서초구립양재노인종합복지관',
-            'region': '인천 남동구'
-          },
-          'createAt': '2025-01-01T00:00:00',
-        },
-        {
-          'newsId': 1,
-          'title': '2025년 사회교육프로그램 강사모집 [웰빙댄스]',
-          'type' : 'NOTICE',
-          'link' : 'https://naver.com',
-          'organization': {
-            'organizationId': 1,
-            'name' : '서초구립양재노인종합복지관',
-            'region': '인천 남동구'
-          },
-          'createAt': '2025-01-01T00:00:00',
-        }
-      ]
-    };
-
-    const pageable = new Pageable<News>(json);
-    let news : Array<News> = json.content.map(value => new News(value));
-    pageable.setContent(news)
     return pageable;
   }
   static mockRecruitDetail(url : String) : RecruitDetail {
@@ -363,22 +268,10 @@ export class ApiServer {
       ]
     };
 
-    const pageable = new Pageable<Career>(json);
+    const pageable : Pageable<Career> = Pageable.of(json);
     let careers : Array<Career> = json.content.map(value => new Career(value));
     pageable.setContent(careers)
     return pageable;
-  }
-
-  static toQueryParams(params : object) {
-    if (params == null) return '';
-    const queryParts = Object.entries(params)
-      // 빈 문자열, null, undefined 값을 가진 키는 필터링
-      .filter(([_, value]) => value !== null && value !== undefined && value !== '')
-      .map(([key, value]) => {
-        return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
-      });
-
-    return queryParts.length > 0 ? `?${queryParts.join('&')}` : '';
   }
 
 }

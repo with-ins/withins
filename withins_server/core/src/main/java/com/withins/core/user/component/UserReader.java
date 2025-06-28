@@ -2,6 +2,7 @@ package com.withins.core.user.component;
 
 import com.withins.core.exception.EntityNotFoundException;
 import com.withins.core.user.entity.User;
+import com.withins.core.user.repository.FormUserRepository;
 import com.withins.core.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +16,13 @@ import java.util.Optional;
 public class UserReader {
 
     private final UserRepository userRepository;
+    private final FormUserRepository formUserRepository;
 
     public Optional<User> readByUsername(final String username) {
         return userRepository.findByUsername(username);
+    }
+    public Optional<User> readByEmail(final String email) {
+        return formUserRepository.findByEmail(email);
     }
 
     public User read(final Long userId) {

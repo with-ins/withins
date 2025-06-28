@@ -19,6 +19,16 @@ const routes: Array<RouteRecordRaw> = [
       },
     ]
   },
+  // {
+  //   path: '/find',
+  //   name: 'Find Account Or Password',
+  //   component: () => import('../pages/login/FindPage.vue'),
+  // },
+  // {
+  //   path: '/signup',
+  //   name: 'sign up',
+  //   component: () => import('../pages/login/SignupPage.vue'),
+  // },
   {
     path: "/news",
     component: () => import("../views/CenterNewsView.vue"),
@@ -30,36 +40,36 @@ const routes: Array<RouteRecordRaw> = [
       }
     ]
   },
-  {
-    path: "/recruit",
-    component: () => import("../views/RecruitmentView.vue"),
-    children: [
-      {
-        path: "",
-        name: "recruitmentList",
-        component: () => import("../pages/recruitment/RecruitmentPage.vue"),
-      },
-      {
-        path: ":recruitId",
-        name: "recruitmentDetail",
-        component: () => import("../pages/recruitment/RecruitmentDetailPage.vue"),
-        props: true,
-      }
-    ]
-  },
-  {
-    path: "/career",
-    name: "careerProfile",
-    component: () => import("../views/CareerProfileView.vue"),
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: "",
-        name: "careerList",
-        component: () => import("../pages/career/CareerPage.vue"),
-      }
-    ]
-  },
+  // {
+  //   path: "/recruit",
+  //   component: () => import("../views/RecruitmentView.vue"),
+  //   children: [
+  //     {
+  //       path: "",
+  //       name: "recruitmentList",
+  //       component: () => import("../pages/recruitment/RecruitmentPage.vue"),
+  //     },
+  //     {
+  //       path: ":recruitId",
+  //       name: "recruitmentDetail",
+  //       component: () => import("../pages/recruitment/RecruitmentDetailPage.vue"),
+  //       props: true,
+  //     }
+  //   ]
+  // },
+  // {
+  //   path: "/career",
+  //   name: "careerProfile",
+  //   component: () => import("../views/CareerProfileView.vue"),
+  //   meta: { requiresAuth: true },
+  //   children: [
+  //     {
+  //       path: "",
+  //       name: "careerList",
+  //       component: () => import("../pages/career/CareerPage.vue"),
+  //     }
+  //   ]
+  // },
   // {
   //   path: "/admin",
   //   name: "admin",

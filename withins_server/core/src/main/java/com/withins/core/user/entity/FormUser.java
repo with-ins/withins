@@ -7,18 +7,18 @@ import lombok.experimental.SuperBuilder;
 
 
 @Entity
-@DiscriminatorValue("org")
+@DiscriminatorValue("form")
 @SuperBuilder
 @Getter
 @NoArgsConstructor
-public final class OrgUser extends User {
+public final class FormUser extends User {
 
     private String password;
+    private String email;
 
     @Override
     protected String getDiscriminatorValue() {
-        return "org";
+        return "form";
     }
-
 
 }

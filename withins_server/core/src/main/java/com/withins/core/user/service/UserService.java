@@ -34,6 +34,9 @@ public class UserService {
     public Optional<User> readByUsername(final String username) {
         return userReader.readByUsername(username);
     }
+    public Optional<User> readByEmail(final String email) {
+        return userReader.readByEmail(email);
+    }
 
     public UserInfoResponse readUserInfo(Long memberId) {
         User user = userReader.read(memberId);

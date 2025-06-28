@@ -138,9 +138,9 @@ import RecruitSearchComponent from "@/components/RecruitSearchComponent.vue";
 import {ref} from "vue";
 import NewsPaginationComponent from "@/components/NewsPaginationComponent.vue";
 import {Pageable} from "@/domain/Pageable";
-import {ApiServer} from "@/api/ApiServer";
 import {News} from "@/domain/News";
-import { newsApi } from "@/api/ApiClient";
+import {newsApi} from "@/api/ApiClient";
+import {FetchResponse} from "@/api/FetchResponse";
 
 document.title = '복지관소식 | WithIns'
 const tabList = {
@@ -198,12 +198,14 @@ const fetchNews = async (page: number, params: any): Promise<Pageable<News>> => 
   };
 
   // API 호출
-  const json: any = await newsApi.news(apiParams);
-  // const json: any = await ApiServer.fetchGet('/news', apiParams);
-  const pageable = new Pageable<News>(json);
-  let news : Array<News> = json.content.map((value:any) => new News(value));
-  pageable.setContent(news)
-  return pageable;
+  const response : FetchResponse = await newsApi.news(apiParams);
+  if (response.status == 200) {
+    const pageable : Pageable<News> = Pageable.of(response.data);
+    let news : Array<News> = response.data.content.map((value:any) => new News(value));
+    pageable.setContent(news)
+    return pageable;
+  }
+  return Pageable.empty();
 };
 
 // 검색 이벤트 핸들러
