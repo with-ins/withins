@@ -8,7 +8,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         scanBasePackages = {
                 "com.withins.api",
                 "com.withins.core",
-                "com.withins.crawl"
+                "com.withins.crawl",
+                "com.withins.mail"
         }
 )
 @EnableScheduling

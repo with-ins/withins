@@ -110,6 +110,26 @@ project(":core") {
     }
 }
 
+project(":mail") {
+    tasks.named<ProcessResources>("processResources") {
+        dependsOn("copyMailConfigInProd")
+    }
+    tasks.register<Copy>("copyMailConfigInProd") {
+        from("${project.rootDir}/config/mail/main")
+        include("**/*.yml")
+        into("${project.rootDir}/mail/src/main/resources")
+    }
+
+    tasks.named<ProcessResources>("processTestResources") {
+        dependsOn("copyMailConfigInTest")
+    }
+    tasks.register<Copy>("copyMailConfigInTest") {
+        from("${project.rootDir}/config/mail/test")
+        include("**/*.yml")
+        into("${project.rootDir}/mail/src/test/resources")
+    }
+}
+
 project(":support:monitoring") {
     tasks.named<ProcessResources>("processResources") {
         dependsOn("copyMonitoringConfigInProd")

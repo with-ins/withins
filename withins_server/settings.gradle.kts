@@ -5,7 +5,8 @@ include(
     "core",
     "support:monitoring",
     "support:logging",
-    "crawl-batch"
+    "crawl-batch",
+    "mail"
 )
 
 pluginManagement {
