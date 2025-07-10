@@ -1,34 +1,43 @@
 package com.withins.crawl;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
 import software.amazon.awssdk.services.lambda.model.InvokeResponse;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class LambdaExecutionResult {
+
+    private static final ObjectMapper objectMapper;
+
+    static {
+        objectMapper = new ObjectMapper();
+    }
 
     private final int statusCode;
     private final String rawResponse;
-    private final JSONObject jsonResponse;
     private final LambdaResponseData responseData;
     private String errorMessage;
 
     public static LambdaExecutionResult from(InvokeResponse response) {
         int statusCode = response.statusCode();
         String rawResponse = response.payload().asUtf8String();
-        JSONObject jsonObject = new JSONObject(rawResponse);
-        LambdaResponseData responseData = LambdaResponseData.from(jsonObject);
 
-        return new LambdaExecutionResult(statusCode, rawResponse, jsonObject, responseData);
+        try {
+            LambdaResponseData responseData = objectMapper.readValue(rawResponse, LambdaResponseData.class);
+            return new LambdaExecutionResult(statusCode, rawResponse, responseData, null);
+        } catch (IOException e) {
+            return ofError(statusCode, e.getMessage());
+        }
     }
 
     public static LambdaExecutionResult ofError(int statusCode, String errorMessage) {
@@ -36,13 +45,12 @@ public class LambdaExecutionResult {
                 statusCode,
                 null,
                 null,
-                null,
                 errorMessage
         );
     }
 
     public boolean isSuccess() {
-        return statusCode == 200 && responseData.isSuccess();
+        return statusCode == 200 && responseData != null && responseData.isSuccess();
     }
 
     public boolean isInvocationSuccessful() {
@@ -50,63 +58,93 @@ public class LambdaExecutionResult {
     }
 
     public String getS3Location() {
-        return responseData.getS3Location();
+        return responseData != null && responseData.getData() != null ? 
+               responseData.getData().getS3Location() : null;
     }
 
     public String getJsonResponse() {
-        return jsonResponse.toString();
+        try {
+            return responseData != null ? objectMapper.writeValueAsString(responseData) : null;
+        } catch (JsonProcessingException e) {
+            return null;
+        }
     }
 
     /**
      * Lambda 응답 데이터를 표현하는 내부 클래스
      */
-    //TODO Jackson을 사용한 개선 예정
     @Getter
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class LambdaResponseData {
         private final boolean success;
         private final String message;
         private final String targetDate;
         private final String jobName;
-        private final String error;
+        private DataObject data; // non-final 유지
+        private ErrorObject error; // non-final 유지
         private final String timestamp;
-        private final String s3Location;
-        //TODO processedJobs를 List에서 String으로 개선 예정(크롤링 서버 수정 후)
-        private final List<String> processedJobs;
-        private final Integer itemCount;
-        private final Integer duration;
 
-        public static LambdaResponseData from(JSONObject json) {
-            boolean success = json.optBoolean("success");
-            String message = json.optString("message", null);
-            String targetDate = json.optString("targetDate", null);
-            String jobName = json.optString("jobName", null);
-            String error = json.optString("error", null);
-            String timestamp = json.optString("timestamp", null);
+        @JsonCreator
+        public LambdaResponseData(
+                @JsonProperty("success") boolean success,
+                @JsonProperty("message") String message,
+                @JsonProperty("targetDate") String targetDate,
+                @JsonProperty("jobName") String jobName,
+                @JsonProperty("data") DataObject data,
+                @JsonProperty("error") ErrorObject error,
+                @JsonProperty("timestamp") String timestamp
+        ) {
+            this.success = success;
+            this.message = message;
+            this.targetDate = targetDate;
+            this.jobName = jobName;
+            this.data = data;
+            this.error = error;
+            this.timestamp = timestamp;
+        }
 
-            String s3Location = null;
-            List<String> processedJobs = null;
-            Integer itemCount = null;
-            Integer duration = null;
+        @Getter
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public static class DataObject {
+            private final List<String> processedJobs;
+            private final String s3Location;
+            private final Integer itemCount;
+            private final Integer duration;
 
-            // 성공한 경우 data 객체에서 추가 정보 추출
-            if (success && json.has("data")) {
-                JSONObject data = json.getJSONObject("data");
-                s3Location = data.optString("s3Location", null);
-                itemCount = data.has("itemCount") ? data.getInt("itemCount") : null;
-                duration = data.has("duration") ? data.getInt("duration") : null;
-
-                if (data.has("processedJobs")) {
-                    processedJobs = IntStream.range(0, data.getJSONArray("processedJobs").length())
-                            .mapToObj(i -> data.getJSONArray("processedJobs").getString(i))
-                            .collect(Collectors.toList());
-                }
+            @JsonCreator
+            public DataObject(
+                    @JsonProperty("processedJobs") List<String> processedJobs,
+                    @JsonProperty("s3Location") String s3Location,
+                    @JsonProperty("itemCo  unt") Integer itemCount,
+                    @JsonProperty("duration") Integer duration
+            ) {
+                this.processedJobs = processedJobs;
+                this.s3Location = s3Location;
+                this.itemCount = itemCount;
+                this.duration = duration;
             }
+        }
 
-            return new LambdaResponseData(
-                    success, message, targetDate, jobName, error, timestamp,
-                    s3Location, processedJobs, itemCount, duration
-            );
+        @Getter
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public static class ErrorObject {
+            private final String message;
+            private final String context;
+            private final String stack;
+
+            @JsonCreator
+            public ErrorObject(
+                    @JsonProperty("message") String message,
+                    @JsonProperty("context") String context,
+                    @JsonProperty("stack") String stack
+            ) {
+                this.message = message;
+                this.context = context;
+                this.stack = stack;
+            }
         }
     }
 }
