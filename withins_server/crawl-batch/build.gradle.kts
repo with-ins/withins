@@ -11,6 +11,7 @@ dependencies {
     implementation("software.amazon.awssdk:ecs:${awsSdkEcsVersion}")
     implementation("software.amazon.awssdk:s3:${awsSdkS3Version}")
     implementation("software.amazon.awssdk:lambda:${awsSdkLambdaVersion}")
+    implementation("software.amazon.awssdk:apache-client:${awsSdkLambdaVersion}")
 
     //TODO org.json:json 라이브러리는 jackson 라이브러리로 대체 예정
     implementation("org.json:json:20230618")
