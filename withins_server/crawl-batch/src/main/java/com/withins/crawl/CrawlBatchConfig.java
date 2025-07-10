@@ -10,6 +10,7 @@ import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -19,12 +20,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.CollectionUtils;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.s3.S3Client;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -116,6 +119,13 @@ public class CrawlBatchConfig {
 
     @Bean
     public LambdaClient lambdaClient() {
-        return LambdaClient.builder().build();
+        return LambdaClient.builder()
+                .httpClientBuilder(ApacheHttpClient.builder()
+                        .socketTimeout(Duration.ofMinutes(5)))  // 소켓 타임아웃 설정
+                .overrideConfiguration(ClientOverrideConfiguration.builder()
+                        .apiCallTimeout(Duration.ofMinutes(5))  // 전체 API 호출 타임아웃
+                        .apiCallAttemptTimeout(Duration.ofMinutes(5))  // 각 시도당 타임아웃
+                        .build())
+                .build();
     }
 }
