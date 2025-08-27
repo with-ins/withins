@@ -26,6 +26,7 @@ dependencies {
     implementation(project(":support:monitoring"))
     implementation(project(":support:logging"))
     implementation(project(":crawl-batch"))
+    implementation(project(":mail"))
 
     testImplementation("io.rest-assured:rest-assured:${restAssuredVersion}")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa")
